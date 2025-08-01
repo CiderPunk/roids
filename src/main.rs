@@ -1,9 +1,11 @@
 mod asset_loader;
 mod game_manager;
 mod start_screen;
+mod camera;
+mod input;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
-use crate::{asset_loader::AssetLoaderPlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, start_screen::StartScreenPlugin};
+use crate::{asset_loader::AssetLoaderPlugin, camera::CameraPlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, input::GameInputPlugin, start_screen::StartScreenPlugin};
 
 
 
@@ -43,6 +45,8 @@ pub fn run_game(){
     AssetLoaderPlugin,
     GameManagerPlugin,
     StartScreenPlugin,
+    CameraPlugin,
+    GameInputPlugin,
 
   ))
   .add_systems(PreUpdate, check_window)
