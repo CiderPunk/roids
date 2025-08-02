@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game_manager::GameState;
+use crate::{game::PauseState, game_manager::GameState};
 
 
 const STOPPED_SPEED_SQUARED: f32 = 2.;
@@ -10,7 +10,7 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin{
   fn build(&self, app: &mut App) {
     app.add_systems(Update, (update_velocity, update_position, update_rotation)
-      .chain());
+      .chain().run_if(in_state(PauseState::Running)));
   }
 }
 

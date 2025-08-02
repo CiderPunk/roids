@@ -6,9 +6,10 @@ mod input;
 mod game;
 mod player;
 mod movement;
+mod pause_screen;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
-use crate::{asset_loader::AssetLoaderPlugin, camera::CameraPlugin, game::GamePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, input::GameInputPlugin, movement::MovementPlugin, player::PlayerPlugin, start_screen::StartScreenPlugin};
+use crate::{asset_loader::AssetLoaderPlugin, camera::CameraPlugin, game::GamePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, input::GameInputPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, start_screen::StartScreenPlugin};
 
 
 
@@ -53,6 +54,7 @@ pub fn run_game(){
     GamePlugin,
     PlayerPlugin,
     MovementPlugin,
+    PauseScreenPlugin,
 
   ))
   .add_systems(PreUpdate, check_window)
