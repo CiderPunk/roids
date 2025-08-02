@@ -8,21 +8,31 @@ pub enum InputEventType {
   Released,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum InputEventAction {
   Shoot,
   Shield,
+  Pause,
 }
 
 
 #[derive(Resource)]
-pub struct KeyBindings{
+struct KeyBindings{
   up_keys:Vec<KeyCode>,
   down_keys:Vec<KeyCode>,
   left_keys:Vec<KeyCode>,
   right_keys:Vec<KeyCode>,
-  shoot_keys:Vec<KeyCode>,
-  shield_keys:Vec<KeyCode>,
+  commands:Vec<KeyCommand>,
+}
+
+struct KeyCommand{
+  action:InputEventAction,
+  keys:Vec<KeyCode>,
+}
+impl KeyCommand{
+  fn new(action:InputEventAction, keys: Vec<KeyCode>) -> Self{
+    Self { action, keys }
+  }
 }
 
 impl Default for KeyBindings{
@@ -32,8 +42,11 @@ impl Default for KeyBindings{
       down_keys: vec!(KeyCode::KeyS, KeyCode::ArrowDown), 
       left_keys: vec!(KeyCode::KeyA, KeyCode::ArrowLeft), 
       right_keys: vec!(KeyCode::KeyD, KeyCode::ArrowRight), 
-      shoot_keys: vec!(KeyCode::Space, KeyCode::ShiftRight ),
-      shield_keys: vec!(KeyCode::ControlLeft, KeyCode::ControlRight),
+      commands: vec!(
+        KeyCommand::new(InputEventAction::Shoot, vec!(KeyCode::Space, KeyCode::ShiftRight )),
+        KeyCommand::new(InputEventAction::Shield, vec!(KeyCode::ControlLeft, KeyCode::ControlRight )),
+        KeyCommand::new(InputEventAction::Pause, vec!(KeyCode::Escape, KeyCode::Pause )),
+      ),
     }
   }
 }
@@ -255,33 +268,20 @@ fn read_keys(
     ev_movement_event.write(InputMovementEvent::new(dir));
   }
 
-  if keyboard_input.any_just_pressed(key_binds.shoot_keys.clone()) {
-    ev_trigger_event.write(InputTriggerEvent::new(
-      InputEventAction::Shoot,
-      InputEventType::Pressed,
-    ));
+  for command in key_binds.commands.iter(){
+  
+    if keyboard_input.any_just_pressed(command.keys.clone()) {
+      ev_trigger_event.write(InputTriggerEvent::new(
+        command.action.clone(),
+        InputEventType::Pressed,
+      ));
+    }
+
+    if keyboard_input.any_just_released(command.keys.clone()) {
+      ev_trigger_event.write(InputTriggerEvent::new(
+        command.action.clone(),
+        InputEventType::Released,
+      ));
+    }
   }
-
-  if keyboard_input.any_just_released(key_binds.shoot_keys.clone()) {
-    ev_trigger_event.write(InputTriggerEvent::new(
-      InputEventAction::Shoot,
-      InputEventType::Released,
-    ));
-  }
-
-  if keyboard_input.any_just_pressed(key_binds.shield_keys.clone()) {
-    ev_trigger_event.write(InputTriggerEvent::new(
-      InputEventAction::Shield,
-      InputEventType::Pressed,
-    ));
-  }
-
-  if keyboard_input.any_just_released(key_binds.shield_keys.clone()) {
-    ev_trigger_event.write(InputTriggerEvent::new(
-      InputEventAction::Shield,
-      InputEventType::Released,
-    ));
-  }
-
-
 }

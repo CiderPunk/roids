@@ -21,7 +21,7 @@ fn check_start_game(mut ev_shoot_event:EventReader<InputTriggerEvent>, mut ev_ga
   for InputTriggerEvent { action, input_type } in ev_shoot_event.read() {
     if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed{
       info!("Starting game");
-      ev_game_state.write(GameStateEvent::new(GameState::Playing));
+      ev_game_state.write(GameStateEvent::new(GameState::GameInit));
     }
   }  
 }
@@ -43,7 +43,7 @@ fn init_start_screen(
     Text::new("ROIDS"),
     TextFont {
       font: scene_assets.font.clone(),
-      font_size: 150.,
+      font_size: 190.,
       ..default()
     },
     TextColor(Color::srgb(0.9, 0.9, 0.9)),

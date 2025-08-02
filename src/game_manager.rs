@@ -8,8 +8,8 @@ pub enum GameState{
   #[default]
   Startup,
   StartScreen,
+  GameInit,
   Playing,
-  Paused, 
   Shutdown,
 }
 
