@@ -20,9 +20,15 @@ pub struct Velocity(pub Vec3);
 
 #[derive(Component, Default)]
 pub struct Acceleration{
-  acceleration:Vec3,
-  max_speed:f32,
-  damping:f32,
+  pub acceleration:Vec3,
+  pub max_speed:f32,
+  pub damping:f32,
+}
+
+impl Acceleration{
+  pub fn new (acceleration:Vec3, max_speed:f32, damping:f32)-> Self{
+    Self { acceleration, max_speed, damping }
+  }
 }
 
 #[derive(Component, Default, Deref, DerefMut)]

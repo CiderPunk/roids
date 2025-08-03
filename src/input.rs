@@ -249,8 +249,10 @@ fn read_keys(
   mut ev_movement_event: EventWriter<InputMovementEvent>,
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
   key_binds: Res<KeyBindings>,
+  mut last_dir: Local<Vec2>,
 ) {
   let mut dir: Vec2 = Vec2::ZERO;
+  
   if keyboard_input.any_pressed(key_binds.left_keys.clone()) {
     dir.x -= 1.;
   }
@@ -264,7 +266,8 @@ fn read_keys(
     dir.y -= 1.;
   }
  
-  if dir != Vec2::ZERO {
+  if dir != *last_dir{
+    *last_dir = dir;
     ev_movement_event.write(InputMovementEvent::new(dir));
   }
 
