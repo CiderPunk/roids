@@ -22,12 +22,13 @@ pub struct Velocity(pub Vec3);
 pub struct Acceleration{
   pub acceleration:Vec3,
   pub max_speed:f32,
+  pub min_speed:f32,
   pub damping:f32,
 }
 
 impl Acceleration{
-  pub fn new (acceleration:Vec3, max_speed:f32, damping:f32)-> Self{
-    Self { acceleration, max_speed, damping }
+  pub fn new (acceleration:Vec3, max_speed:f32, min_speed:f32, damping:f32)-> Self{
+    Self { acceleration, max_speed, min_speed, damping }
   }
 }
 
@@ -46,7 +47,7 @@ fn update_velocity(mut query:Query<(&mut Velocity, &Acceleration)>, time:Res<Tim
     let mut acc = acceleration.acceleration;
     
     //stopped
-    if acc == Vec3::ZERO && velocity.length_squared() < STOPPED_SPEED_SQUARED{
+    if acc == Vec3::ZERO && velocity.length_squared() < acceleration.min_speed{
       velocity.0 = Vec3::ZERO;
       continue;
     }

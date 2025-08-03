@@ -1,8 +1,12 @@
-use bevy::{math::VectorSpace, prelude::*};
+use std::cmp;
+
+use bevy::prelude::*;
 
 use crate::{asset_loader::SceneAssets, game::PauseState, game_manager::GameState, input::{InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}};
 
 const START_TRANSLATION: Vec3 = Vec3::new(0.,0.,0.);
+const ROTATION_SPEED: f32 = -5.0;
+const ACCELERATION_MULTIPIER: f32 = 10.0;
 
 pub struct PlayerPlugin;
 
@@ -36,7 +40,8 @@ commands.spawn((
     Acceleration{
         acceleration: Vec3::ZERO,
         max_speed: 20.,
-        damping: 0.,
+        damping: 0.5,
+        min_speed:2.0,
     }
   ));
 
@@ -48,10 +53,11 @@ fn update_player_movement(
   mut player:Single<(&GlobalTransform, &mut Acceleration, &mut Rotation),With<Player>>
 ){
 
-  let (global_trasform, mut acceleration, mut rotation) = player.into_inner();
+  let (transform, mut acceleration, mut rotation) = player.into_inner();
   for InputMovementEvent{ direction } in ev_input_movement_event.read(){
-    rotation.y = direction.x * 10.;
 
+    rotation.y = direction.x * ROTATION_SPEED;
+    acceleration.acceleration = transform.forward() * ACCELERATION_MULTIPIER * direction.y.max(0.);      
 
   }
 
