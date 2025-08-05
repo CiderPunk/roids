@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub const CAMERA_LOCATION: Vec3 = Vec3::new(0., 80., 0.);
+pub const CAMERA_LOCATION: Vec3 = Vec3::new(0.,160., 0.);
 
 pub struct CameraPlugin;
 

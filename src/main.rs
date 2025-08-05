@@ -7,9 +7,11 @@ mod game;
 mod player;
 mod movement;
 mod pause_screen;
+mod bullet;
+mod bounds;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
-use crate::{asset_loader::AssetLoaderPlugin, camera::CameraPlugin, game::GamePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, input::GameInputPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, start_screen::StartScreenPlugin};
+use crate::{asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, game::GamePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, input::GameInputPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, start_screen::StartScreenPlugin};
 
 
 
@@ -55,6 +57,8 @@ pub fn run_game(){
     PlayerPlugin,
     MovementPlugin,
     PauseScreenPlugin,
+    BulletPlugin,
+    BoundsPlugin,
 
   ))
   .add_systems(PreUpdate, check_window)

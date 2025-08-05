@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 
 
 
@@ -266,7 +266,7 @@ fn read_keys(
     dir.y -= 1.;
   }
  
-  if dir != *last_dir{
+  if dir != *last_dir || dir != Vec2::ZERO{
     *last_dir = dir;
     ev_movement_event.write(InputMovementEvent::new(dir));
   }
