@@ -31,22 +31,22 @@ pub fn run_game(){
       ..Default::default()
     })
     .add_plugins(
-      DefaultPlugins.set(WindowPlugin{
-        primary_window: Some(Window{
-          title: APP_NAME.into(),
-          name: Some(APP_NAME.into()),
-          fit_canvas_to_parent: true,
-          visible: true,
+      DefaultPlugins.set(
+        WindowPlugin{
+          primary_window: Some(Window{
+            title: APP_NAME.into(),
+            name: Some(APP_NAME.into()),
+            fit_canvas_to_parent: true,
+            visible: true,
+            ..default()
+          }),
           ..default()
-        }),
-        ..default()
-      })
+        })
       //prevent meta check issues on itch.io 
       .set(AssetPlugin {
         meta_check: AssetMetaCheck::Never,
         ..default()
-      }),
-  )
+      }))
   .add_plugins((
     AssetLoaderPlugin,
     GameManagerPlugin,

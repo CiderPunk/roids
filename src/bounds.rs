@@ -3,7 +3,7 @@ use bevy::{asset::RenderAssetUsages, math::VectorSpace, prelude::*, render::{mes
 use crate::{asset_loader::SceneAssets, game_manager::GameState};
 
 
-const BOUNDS_SHADER_PATH:&str = "shaders/fireball.wgsl";
+const BOUNDS_SHADER_PATH:&str = "shaders/bounds_material.wgsl";
 
 pub struct BoundsPlugin;
 

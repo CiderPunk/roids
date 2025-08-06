@@ -40,7 +40,7 @@ fn init_start_screen(
   info!("init start screen");
   commands.spawn((
     StartScreenComponent,
-    Text::new("ROIDS"),
+    Text::new("'ROIDS"),
     TextFont {
       font: scene_assets.font.clone(),
       font_size: 190.,

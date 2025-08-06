@@ -27,7 +27,7 @@ impl Plugin for GameManagerPlugin{
 
 fn start_screen(mut next_state: ResMut<NextState<GameState>>){
   info!("Switching to start screen");
-  next_state.set(GameState::StartScreen);
+  next_state.set(GameState::GameInit);
 }
 
 
