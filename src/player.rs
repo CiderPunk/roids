@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bullet::ShootEvent, game::PauseState, game_manager::GameState, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}};
+use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, game::PauseState, game_manager::GameState, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}};
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0.,0.,0.);
 const PLAYER_ROTATION_SPEED: f32 = -5.0;
@@ -41,7 +41,8 @@ commands.spawn((
       max_speed: PLAYER_MAX_SPEED,
       damping: PLAYER_DAMPING,
       min_speed:2.0,
-    }
+    },
+    BoundsWarp,
   ));
 }
 

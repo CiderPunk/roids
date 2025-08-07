@@ -45,6 +45,7 @@ pub fn run_game(){
       //prevent meta check issues on itch.io 
       .set(AssetPlugin {
         meta_check: AssetMetaCheck::Never,
+        watch_for_changes_override: Some(true),
         ..default()
       }))
   .add_plugins((

@@ -1,9 +1,8 @@
-use bevy::{asset::RenderAssetUsages, math::VectorSpace, prelude::*, render::{mesh::Indices, render_resource::{AsBindGroup, ShaderRef}}};
-
-use crate::{asset_loader::SceneAssets, game_manager::GameState};
-
+use bevy::{asset::RenderAssetUsages, prelude::*, render::{mesh::Indices, render_resource::{AsBindGroup, ShaderRef}}};
+use crate::game_manager::GameState;
 
 const BOUNDS_SHADER_PATH:&str = "shaders/bounds_material.wgsl";
+const BOUNDS_SIZE:Vec3 = Vec3::new(200.0, 0., 110.0);
 
 pub struct BoundsPlugin;
 
@@ -11,7 +10,40 @@ impl Plugin for BoundsPlugin{
   fn build(&self, app: &mut App) {
     app
       .add_plugins(MaterialPlugin::<CustomMaterial>::default())
-      .add_systems(OnEnter(GameState::GameInit), build_bounds_mesh);
+      .add_systems(OnEnter(GameState::GameInit), build_bounds_mesh)
+      .add_systems(Update, (bounds_despawn, bounds_warp));
+  }
+}
+
+#[derive(Component)]
+struct Bounds{
+  half_size:Vec3,
+}
+
+#[derive(Component)]
+pub struct BoundsDespawn;
+#[derive(Component)]
+pub struct BoundsWarp;
+
+fn bounds_despawn(){
+
+}
+
+fn bounds_warp(
+  bounds:Query<&Bounds>,
+  mut query:Query<&Transform, With<BoundsWarp>>,
+){
+  let Ok(Bounds{ half_size }) = bounds.single() else{
+    return;
+  };
+
+  for (mut transform) in query.iter_mut(){
+    let pos = transform.translation.abs();
+    if pos.x > half_size.x || pos.z > half_size.z{
+      info!("out of bounds!");
+
+    }
+
   }
 }
 
@@ -22,13 +54,15 @@ fn build_bounds_mesh(
   mut materials:ResMut<Assets<CustomMaterial>>,
 ){
   info!("creating bounds mesh");
-  let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(200., 120., 10.));
+  let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(BOUNDS_SIZE.x, BOUNDS_SIZE.z, 10.));
   let material_handle = materials.add(CustomMaterial{
-    color: LinearRgba::rgb(0.,0.,1.),
+    color1: LinearRgba::rgb(0.8,0.8,0.),
+    color2: LinearRgba::rgb(0.8,0.,0.),
     alpha_mode:AlphaMode::AlphaToCoverage,
   });
 
   commands.spawn((   
+    Bounds{ half_size: BOUNDS_SIZE, },
     Mesh3d(mesh_handle),
     MeshMaterial3d(material_handle),
     Transform::from_translation(Vec3::Y * 5.0),
@@ -39,7 +73,9 @@ fn build_bounds_mesh(
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 struct CustomMaterial {
     #[uniform(0)]
-    color: LinearRgba,
+    color1: LinearRgba,
+    #[uniform(1)]
+    color2: LinearRgba,
     alpha_mode: AlphaMode,
 }
 
