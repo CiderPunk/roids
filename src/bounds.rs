@@ -2,7 +2,7 @@ use bevy::{asset::RenderAssetUsages, prelude::*, render::{mesh::Indices, render_
 use crate::game_manager::GameState;
 
 const BOUNDS_SHADER_PATH:&str = "shaders/bounds_material.wgsl";
-const BOUNDS_SIZE:Vec3 = Vec3::new(200.0, 0., 110.0);
+const BOUNDS_SIZE:Vec3 = Vec3::new(100.0, 0., 55.0);
 
 pub struct BoundsPlugin;
 
@@ -88,9 +88,9 @@ impl Material for CustomMaterial {
     }
 }
 
-fn create_frame_mesh(width:f32, height:f32, border:f32) -> Mesh{
-  let hw = width / 2.;
-  let hh = height / 2.;
+fn create_frame_mesh(half_width:f32, half_height:f32, border:f32) -> Mesh{
+  let hw = half_width;
+  let hh = half_height;
   let hhb = hh + border;
   let hwb = hw + border;
   Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, RenderAssetUsages::default())
