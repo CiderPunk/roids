@@ -10,7 +10,7 @@
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
-
+    
     let f = mesh.world_position.xz * (1.0 / 3.0);
     let s = floor(abs(sin(f.x+f.y + sin(globals.time) *5.5))+0.2);
     let t = floor(abs(sin(f.x-f.y + cos(globals.time) *3.142))+0.20);

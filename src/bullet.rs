@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, game::PauseState, movement::Velocity};
+use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, game::PauseState, movement::Velocity};
 
 pub struct BulletPlugin;
 
@@ -28,6 +28,7 @@ fn do_shooting(
   {
     let transform =  Transform::from_translation(start).with_scale(Vec3::new(scale,scale,scale));
     commands.spawn((
+      BoundsWarp,
       Bullet { damage, owner:Some(owner) },
       Mesh3d(scene_assets.bullet.clone()),
       MeshMaterial3d(scene_assets.bullet_material.clone()),

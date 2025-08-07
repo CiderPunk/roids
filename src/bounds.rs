@@ -25,25 +25,47 @@ pub struct BoundsDespawn;
 #[derive(Component)]
 pub struct BoundsWarp;
 
-fn bounds_despawn(){
-
-}
-
-fn bounds_warp(
+fn bounds_despawn(
+  mut commands:Commands,
   bounds:Query<&Bounds>,
-  mut query:Query<&Transform, With<BoundsWarp>>,
+  query:Query<(Entity, &GlobalTransform), With<BoundsDespawn>>,
 ){
   let Ok(Bounds{ half_size }) = bounds.single() else{
     return;
   };
 
-  for (mut transform) in query.iter_mut(){
-    let pos = transform.translation.abs();
-    if pos.x > half_size.x || pos.z > half_size.z{
-      info!("out of bounds!");
-
+  for (entity, transform) in  query.iter(){
+    let translation = transform.translation().abs();
+    if translation.x > half_size.x || translation.z > half_size.z{
+     commands.entity(entity).despawn();
     }
+  }
+}
 
+fn bounds_warp(
+  bounds:Query<&Bounds>,
+  mut query:Query<&mut Transform, With<BoundsWarp>>,
+){
+  let Ok(Bounds{ half_size }) = bounds.single() else{
+    return;
+  };
+
+  for (mut transform) in &mut query{
+
+    if transform.translation.x < -half_size.x{
+      transform.translation.x += (half_size.x * 2.);
+    }
+    
+    if transform.translation.x > half_size.x{
+      transform.translation.x -= (half_size.x * 2.);
+    }
+    if transform.translation.z < -half_size.z{
+      transform.translation.z += (half_size.z * 2.);
+    }
+    
+    if transform.translation.z > half_size.z{
+      transform.translation.z -= (half_size.z * 2.);
+    }
   }
 }
 
