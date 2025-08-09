@@ -1,42 +1,48 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, game_manager::{GameState, GameStateEvent}, input::{InputEventAction, InputEventType, InputTriggerEvent}};
+use crate::{
+  asset_loader::SceneAssets,
+  game_manager::{GameState, GameStateEvent},
+  input::{InputEventAction, InputEventType, InputTriggerEvent},
+};
 
 pub struct StartScreenPlugin;
 
-impl Plugin for StartScreenPlugin{
+impl Plugin for StartScreenPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(OnEnter(GameState::StartScreen), init_start_screen)
       .add_systems(OnExit(GameState::StartScreen), cleanup_start_screen)
-      .add_systems(Update, (check_start_game).run_if(in_state(GameState::StartScreen)));
-    }
+      .add_systems(
+        Update,
+        (check_start_game).run_if(in_state(GameState::StartScreen)),
+      );
+  }
 }
 
 #[derive(Component)]
 pub struct StartScreenComponent;
 
-
-fn check_start_game(mut ev_shoot_event:EventReader<InputTriggerEvent>, mut ev_game_state:EventWriter<GameStateEvent>){
+fn check_start_game(
+  mut ev_shoot_event: EventReader<InputTriggerEvent>,
+  mut ev_game_state: EventWriter<GameStateEvent>,
+) {
   for InputTriggerEvent { action, input_type } in ev_shoot_event.read() {
-    if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed{
+    if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed {
       info!("Starting game");
       ev_game_state.write(GameStateEvent::new(GameState::GameInit));
     }
-  }  
+  }
 }
 
-fn cleanup_start_screen(mut commands:Commands, query:Query<Entity, With<StartScreenComponent>>){
+fn cleanup_start_screen(mut commands: Commands, query: Query<Entity, With<StartScreenComponent>>) {
   info!("despawning start screen");
-  for entity in query{
+  for entity in query {
     commands.entity(entity).despawn();
   }
 }
 
-fn init_start_screen(
-  mut commands: Commands,
-  scene_assets:Res<SceneAssets>,
-){
+fn init_start_screen(mut commands: Commands, scene_assets: Res<SceneAssets>) {
   info!("init start screen");
   commands.spawn((
     StartScreenComponent,
@@ -55,7 +61,7 @@ fn init_start_screen(
     },
   ));
 
- commands.spawn((
+  commands.spawn((
     StartScreenComponent,
     Text::new("Press FIRE to start"),
     TextFont {
@@ -71,7 +77,4 @@ fn init_start_screen(
       ..default()
     },
   ));
-
-
-
 }

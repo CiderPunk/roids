@@ -1,6 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*};
-
-
+use bevy::prelude::*;
 
 #[derive(PartialEq)]
 pub enum InputEventType {
@@ -15,43 +13,49 @@ pub enum InputEventAction {
   Pause,
 }
 
-
 #[derive(Resource)]
-struct KeyBindings{
-  up_keys:Vec<KeyCode>,
-  down_keys:Vec<KeyCode>,
-  left_keys:Vec<KeyCode>,
-  right_keys:Vec<KeyCode>,
-  commands:Vec<KeyCommand>,
+struct KeyBindings {
+  up_keys: Vec<KeyCode>,
+  down_keys: Vec<KeyCode>,
+  left_keys: Vec<KeyCode>,
+  right_keys: Vec<KeyCode>,
+  commands: Vec<KeyCommand>,
 }
 
-struct KeyCommand{
-  action:InputEventAction,
-  keys:Vec<KeyCode>,
+struct KeyCommand {
+  action: InputEventAction,
+  keys: Vec<KeyCode>,
 }
-impl KeyCommand{
-  fn new(action:InputEventAction, keys: Vec<KeyCode>) -> Self{
+impl KeyCommand {
+  fn new(action: InputEventAction, keys: Vec<KeyCode>) -> Self {
     Self { action, keys }
   }
 }
 
-impl Default for KeyBindings{
+impl Default for KeyBindings {
   fn default() -> Self {
-    Self { 
-      up_keys: vec!(KeyCode::KeyW, KeyCode::ArrowUp),
-      down_keys: vec!(KeyCode::KeyS, KeyCode::ArrowDown), 
-      left_keys: vec!(KeyCode::KeyA, KeyCode::ArrowLeft), 
-      right_keys: vec!(KeyCode::KeyD, KeyCode::ArrowRight), 
-      commands: vec!(
-        KeyCommand::new(InputEventAction::Shoot, vec!(KeyCode::Space, KeyCode::ShiftRight )),
-        KeyCommand::new(InputEventAction::Shield, vec!(KeyCode::ControlLeft, KeyCode::ControlRight )),
-        KeyCommand::new(InputEventAction::Pause, vec!(KeyCode::Escape, KeyCode::Pause )),
-      ),
+    Self {
+      up_keys: vec![KeyCode::KeyW, KeyCode::ArrowUp],
+      down_keys: vec![KeyCode::KeyS, KeyCode::ArrowDown],
+      left_keys: vec![KeyCode::KeyA, KeyCode::ArrowLeft],
+      right_keys: vec![KeyCode::KeyD, KeyCode::ArrowRight],
+      commands: vec![
+        KeyCommand::new(
+          InputEventAction::Shoot,
+          vec![KeyCode::Space, KeyCode::ShiftRight],
+        ),
+        KeyCommand::new(
+          InputEventAction::Shield,
+          vec![KeyCode::ControlLeft, KeyCode::ControlRight],
+        ),
+        KeyCommand::new(
+          InputEventAction::Pause,
+          vec![KeyCode::Escape, KeyCode::Pause],
+        ),
+      ],
     }
   }
 }
-
-
 
 pub struct GameInputPlugin;
 
@@ -62,11 +66,7 @@ impl Plugin for GameInputPlugin {
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
       .add_systems(Startup, init_input_resources)
-      .add_systems(
-        Update,
-        (read_keys, read_touch, read_gamepads)
-          .chain()
-      );
+      .add_systems(Update, (read_keys, read_touch, read_gamepads).chain());
   }
 }
 
@@ -92,12 +92,12 @@ impl InputTriggerEvent {
     Self { action, input_type }
   }
 }
-
+/*
 #[derive(Resource)]
 struct MouseResource {
   last: Vec2,
 }
-
+ */
 #[derive(Resource)]
 struct TouchResource {
   move_finger: Option<u64>,
@@ -105,7 +105,7 @@ struct TouchResource {
 }
 
 fn init_input_resources(mut commands: Commands) {
-  commands.insert_resource(MouseResource { last: Vec2::ZERO });
+  //commands.insert_resource(MouseResource { last: Vec2::ZERO });
   commands.insert_resource(TouchResource {
     last: Vec2::ZERO,
     move_finger: None,
@@ -118,8 +118,6 @@ fn read_gamepads(
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
 ) {
   for gamepad in &gamepads {
-
-    
     if gamepad.just_pressed(GamepadButton::East) {
       ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shield,
@@ -241,9 +239,6 @@ fn read_mouse(
 }
  */
 
-
-
-
 fn read_keys(
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut ev_movement_event: EventWriter<InputMovementEvent>,
@@ -252,7 +247,7 @@ fn read_keys(
   mut last_dir: Local<Vec2>,
 ) {
   let mut dir: Vec2 = Vec2::ZERO;
-  
+
   if keyboard_input.any_pressed(key_binds.left_keys.clone()) {
     dir.x -= 1.;
   }
@@ -265,14 +260,13 @@ fn read_keys(
   if keyboard_input.any_pressed(key_binds.down_keys.clone()) {
     dir.y -= 1.;
   }
- 
-  if dir != *last_dir || dir != Vec2::ZERO{
+
+  if dir != *last_dir || dir != Vec2::ZERO {
     *last_dir = dir;
     ev_movement_event.write(InputMovementEvent::new(dir));
   }
 
-  for command in key_binds.commands.iter(){
-  
+  for command in key_binds.commands.iter() {
     if keyboard_input.any_just_pressed(command.keys.clone()) {
       ev_trigger_event.write(InputTriggerEvent::new(
         command.action.clone(),

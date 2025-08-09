@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
-use crate::asset_loader::{AssetState, SceneAssets};
-
+use crate::asset_loader::AssetState;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
-pub enum GameState{
+pub enum GameState {
   #[default]
   Startup,
   StartScreen,
@@ -15,7 +14,7 @@ pub enum GameState{
 
 pub struct GameManagerPlugin;
 
-impl Plugin for GameManagerPlugin{
+impl Plugin for GameManagerPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(OnEnter(AssetState::Ready), start_screen)
@@ -25,12 +24,10 @@ impl Plugin for GameManagerPlugin{
   }
 }
 
-fn start_screen(mut next_state: ResMut<NextState<GameState>>){
+fn start_screen(mut next_state: ResMut<NextState<GameState>>) {
   info!("Switching to start screen");
   next_state.set(GameState::GameInit);
 }
-
-
 
 #[derive(Event)]
 pub struct GameStateEvent {
