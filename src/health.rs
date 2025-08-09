@@ -5,7 +5,20 @@ impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_event::<HealthEvent>()
-      .add_systems(Update, apply_health_changes);
+      .add_systems(Update, apply_health_changes)
+      .add_systems(Update, remove_dead);
+  }
+}
+
+
+fn remove_dead(
+  mut commands:Commands, 
+  query:Query<(Entity,&Health)>
+){
+  for (entity, health) in query.iter(){
+    if health.value <= 0.{
+      commands.entity(entity).despawn();
+    }
   }
 }
 

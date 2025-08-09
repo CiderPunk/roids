@@ -1,10 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds::BoundsWarp,
-  game_manager::GameState,
-  movement::{Rotation, Velocity},
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, game_manager::GameState, health::Health, movement::{Rotation, Velocity}
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -21,9 +18,14 @@ pub struct RoidPlugin;
 
 impl Plugin for RoidPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(OnEnter(GameState::GameInit), spawn_roids);
+    app
+    .add_systems(OnEnter(GameState::GameInit), spawn_roids);
+    //.add_systems(Update, check_asteroid_health);
   }
 }
+
+
+
 
 #[derive(Component)]
 struct Roid;
@@ -54,6 +56,8 @@ fn spawn_roids(mut commands: Commands, scene_assets: Res<SceneAssets>) {
       Velocity(velocity),
       SceneRoot(scene_assets.roid1.clone()),
       Rotation(rotation),
+      Collider{ radius: 8., damage: 100. },
+      Health{ value: 10., max: 10., last_hurt_by: None },
     ));
   }
 }

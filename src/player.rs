@@ -1,13 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds::BoundsWarp,
-  bullet::ShootEvent,
-  game::PauseState,
-  game_manager::GameState,
-  input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
-  movement::{Acceleration, Rotation, Velocity},
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, game::PauseState, game_manager::GameState, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -18,7 +12,7 @@ const PLAYER_MAX_SPEED: f32 = 30.;
 const PLAYER_SHOOT_DELAY: f32 = 0.5;
 const PLAYER_BULLET_FORWARD_OFFSET: f32 = 2.5;
 const PLAYER_BULLET_VELOCITY: f32 = 60.;
-const PLAYER_BULLET_DAMAGE: f32 = 10.;
+const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 pub struct PlayerPlugin;
 
@@ -56,6 +50,8 @@ fn create_player(mut commands: Commands, scene_assets: Res<SceneAssets>) {
       min_speed: 2.0,
     },
     BoundsWarp(true),
+    Collider{ radius: 5., damage: 0. },
+    Health{ value: 10., max: 10., last_hurt_by: None },
   ));
 }
 
