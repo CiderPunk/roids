@@ -7,8 +7,8 @@ pub struct BulletPlugin;
 impl Plugin for BulletPlugin{
   fn build(&self, app: &mut App) {
     app.add_event::<ShootEvent>()
-    .add_systems(Update, do_shooting.run_if(in_state(PauseState::Running)));
-      
+    .add_systems(Update, (do_shooting, time_to_live).run_if(in_state(PauseState::Running)));
+    
   }
 }
 
@@ -34,11 +34,23 @@ fn do_shooting(
       MeshMaterial3d(scene_assets.bullet_material.clone()),
       transform,
       Velocity(velocity),
+      TimeToLive(3.0),
     ));
   }
 }
 
-
+fn time_to_live(
+  mut commands:Commands,
+  mut query:Query<(&mut TimeToLive, Entity)>,
+  time:Res<Time>,
+){
+  for (mut time_to_live, entity) in &mut query{
+    time_to_live.0 -= time.delta_secs();
+    if time_to_live.0 < 0.{
+      commands.entity(entity).despawn();
+    }
+  }
+}
 
 #[derive(Event)]
 pub struct ShootEvent {
@@ -62,6 +74,11 @@ impl ShootEvent {
     }
   }
 }
+
+
+#[derive(Component, Default, Deref, DerefMut)]
+pub struct TimeToLive(pub f32);
+
 
 
 #[derive(Component)]

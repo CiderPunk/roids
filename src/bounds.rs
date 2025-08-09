@@ -2,7 +2,8 @@ use bevy::{asset::RenderAssetUsages, prelude::*, render::{mesh::Indices, render_
 use crate::game_manager::GameState;
 
 const BOUNDS_SHADER_PATH:&str = "shaders/bounds_material.wgsl";
-const BOUNDS_SIZE:Vec3 = Vec3::new(100.0, 0., 55.0);
+const BOUNDS_SIZE:Vec3 = Vec3::new(115.0, 0., 65.0);
+const BOUNDS_BORDER_SIZE:f32 = 20.;
 
 pub struct BoundsPlugin;
 
@@ -76,7 +77,7 @@ fn build_bounds_mesh(
   mut materials:ResMut<Assets<CustomMaterial>>,
 ){
   info!("creating bounds mesh");
-  let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(BOUNDS_SIZE.x, BOUNDS_SIZE.z, 10.));
+  let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(BOUNDS_SIZE.x, BOUNDS_SIZE.z, BOUNDS_BORDER_SIZE));
   let material_handle = materials.add(CustomMaterial{
     color1: LinearRgba::rgb(0.8,0.8,0.),
     color2: LinearRgba::rgb(0.8,0.,0.),
@@ -111,10 +112,10 @@ impl Material for CustomMaterial {
 }
 
 fn create_frame_mesh(half_width:f32, half_height:f32, border:f32) -> Mesh{
-  let hw = half_width;
-  let hh = half_height;
-  let hhb = hh + border;
-  let hwb = hw + border;
+  let hw = half_width - (border*0.5);
+  let hh = half_height - (border* 0.5);
+  let hhb = hh + (border * 0.5);
+  let hwb = hw + (border * 0.5);
   Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, RenderAssetUsages::default())
     .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, 
       vec![
