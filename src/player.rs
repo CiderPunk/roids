@@ -30,8 +30,11 @@ pub struct Player{
   next_shoot_time:f32,
 }
 
-fn create_player(mut commands: Commands, scene_assets: Res<SceneAssets>){
-commands.spawn((
+fn create_player(
+  mut commands: Commands,
+  scene_assets: Res<SceneAssets>
+){
+  commands.spawn((
     Player { ..default() },
     SceneRoot(scene_assets.ship.clone()),
     Transform::from_translation(PLAYER_START_TRANSLATION),
@@ -42,7 +45,7 @@ commands.spawn((
       damping: PLAYER_DAMPING,
       min_speed:2.0,
     },
-    BoundsWarp,
+    BoundsWarp(true),
   ));
 }
 

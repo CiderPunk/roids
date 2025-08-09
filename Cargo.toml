@@ -10,7 +10,6 @@ features=[
   "embedded_watcher",
 ]
 
-
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
 opt-level = 1
@@ -22,3 +21,6 @@ opt-level = 3
 # for Windows
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
+
+[dependencies]
+rand = "0.9.2"

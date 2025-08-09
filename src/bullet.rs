@@ -6,15 +6,16 @@ pub struct BulletPlugin;
 
 impl Plugin for BulletPlugin{
   fn build(&self, app: &mut App) {
-    app.add_event::<ShootEvent>()
-    .add_systems(Update, (do_shooting, time_to_live).run_if(in_state(PauseState::Running)));
-    
+    app
+    .add_event::<ShootEvent>()
+    .add_event::<BulletHitEvent>()
+    .add_systems(Update, (do_shooting, time_to_live, bullet_hit).run_if(in_state(PauseState::Running)));
   }
 }
 
 fn do_shooting(
   mut commands: Commands,
-  mut ev_shoot_events: EventReader<ShootEvent>,
+  mut ev_shoot_reader: EventReader<ShootEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
   for &ShootEvent {
@@ -24,18 +25,30 @@ fn do_shooting(
     damage,
     scale,
     owner,
-  } in ev_shoot_events.read()
+  } in ev_shoot_reader.read()
   {
     let transform =  Transform::from_translation(start).with_scale(Vec3::new(scale,scale,scale));
     commands.spawn((
-      BoundsWarp,
-      Bullet { damage, owner:Some(owner) },
+      BoundsWarp(true),
+      Bullet { damage:damage, owner:Some(owner), is_players: is_player },
       Mesh3d(scene_assets.bullet.clone()),
       MeshMaterial3d(scene_assets.bullet_material.clone()),
       transform,
       Velocity(velocity),
       TimeToLive(3.0),
     ));
+  }
+}
+
+fn bullet_hit(
+  mut commands:Commands,
+  mut ev_bullet_hit_reader:EventReader<BulletHitEvent>
+){
+  for &BulletHitEvent{
+    bullet,
+  } in ev_bullet_hit_reader.read(){
+    //add effect
+    commands.entity(bullet).despawn();
   }
 }
 
@@ -79,12 +92,22 @@ impl ShootEvent {
 #[derive(Component, Default, Deref, DerefMut)]
 pub struct TimeToLive(pub f32);
 
-
-
 #[derive(Component)]
 #[require(Velocity)]
 pub struct Bullet {
-  //pub hit: bool,
+  pub is_players:bool,
   pub damage: f32,
   pub owner:Option<Entity>,
+}
+
+
+#[derive(Event)]
+pub struct BulletHitEvent {
+  bullet: Entity,
+}
+
+impl BulletHitEvent {
+  pub fn new(entity: Entity) -> Self {
+    Self { bullet: entity }
+  }
 }
