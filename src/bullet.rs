@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, game::PauseState, movement::Velocity,
-  scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds::BoundsWarp, movement::Velocity, scheduling::GameSchedule,
 };
 
 pub struct BulletPlugin;

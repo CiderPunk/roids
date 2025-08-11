@@ -1,4 +1,4 @@
-use std::{default, f32::consts::PI};
+use std::f32::consts::PI;
 
 use crate::{
   asset_loader::SceneAssets,
@@ -9,18 +9,16 @@ use crate::{
   movement::{Rotation, Velocity},
   scheduling::GameSchedule,
 };
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 use rand::Rng;
 
-
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash, Default)]
-enum RoidSize{
+enum RoidSize {
   #[default]
   Large,
   Medium,
   Small,
 }
-
 
 const ROID_SPAWN_DISTANCE: f32 = 150.0;
 const ROID_LOW_SPEED: f32 = 4.;
@@ -42,68 +40,76 @@ impl Plugin for RoidPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(OnEnter(GameState::GameInit), spawn_roids)
-      .add_systems(Update, check_asteroid_health.in_set(GameSchedule::PreDespawnEntities));
+      .add_systems(
+        Update,
+        check_asteroid_health.in_set(GameSchedule::PreDespawnEntities),
+      );
   }
 }
-
 
 #[derive(Component, Default, Deref, DerefMut)]
 struct Roid(RoidSize);
 
-
 fn check_asteroid_health(
-  mut commands:Commands, 
-  query:Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
-  scene_assets: Res<SceneAssets>
-){
+  mut commands: Commands,
+  query: Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
+  scene_assets: Res<SceneAssets>,
+) {
   let mut rng = rand::rng();
-  for (roid, health, transform, velocity) in query.iter(){
-    if health.value > 0.{
+  for (roid, health, transform, velocity) in query.iter() {
+    if health.value > 0. {
       continue;
     }
-    if roid.0 == RoidSize::Small{
+    if roid.0 == RoidSize::Small {
       continue;
     }
 
-    let scale:Vec3;
-    let collider_radius:f32;
-    let next_size:RoidSize;
-    match roid.0{
-      RoidSize::Large => { 
+    let scale: Vec3;
+    let collider_radius: f32;
+    let next_size: RoidSize;
+    match roid.0 {
+      RoidSize::Large => {
         scale = ROID_MEDIUM_SCALE;
         collider_radius = ROID_MEDIUM_RADIUS;
         next_size = RoidSize::Medium;
-      },
-      RoidSize::Medium => { 
+      }
+      RoidSize::Medium => {
         scale = ROID_SMALL_SCALE;
         collider_radius = ROID_SMALL_RADIUS;
         next_size = RoidSize::Small;
-      },
-      RoidSize::Small => { 
+      }
+      RoidSize::Small => {
         scale = ROID_SMALL_SCALE;
         collider_radius = ROID_SMALL_RADIUS;
         next_size = RoidSize::Small;
-      },
+      }
     }
 
-    for _ in 0 .. 2{
+    for _ in 0..2 {
       commands.spawn((
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(true),
         Transform::from_translation(transform.translation()).with_scale(scale),
-        Velocity(velocity.0 + Vec3::new(rng.random_range(-10. .. 10.), 0., rng.random_range(-10. .. 10.))),
+        Velocity(
+          velocity.0
+            + Vec3::new(
+              rng.random_range(-10. ..10.),
+              0.,
+              rng.random_range(-10. ..10.),
+            ),
+        ),
         Health {
           value: 10.,
           max: 10.,
           last_hurt_by: None,
         },
-          Collider {
+        Collider {
           radius: collider_radius,
           damage: ROID_COLLISION_DAMAGE,
         },
         Roid(next_size.clone()),
       ));
-    };
+    }
   }
 }
 

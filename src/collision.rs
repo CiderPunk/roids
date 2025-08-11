@@ -13,7 +13,7 @@ impl Plugin for CollisionPlugin {
       PostUpdate,
       (detect_bullet_collisions, detect_collisions).in_set(GameSchedule::CollisionDetection),
     )
-    //.add_systems(Update, add_collision_shell)
+    //.add_systems(Update, _add_collision_shell)
     ;
   }
 }
@@ -24,16 +24,16 @@ pub struct Collider {
   pub damage: f32,
 }
 
-fn add_collision_shell(
-  mut commands:Commands,
-  query:Query<(Entity, &Collider, &Transform), Added<Collider>>,
+fn _add_collision_shell(
+  mut commands: Commands,
+  query: Query<(Entity, &Collider, &Transform), Added<Collider>>,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
-
-){
-  for (entity, collider, transform) in query.iter(){
-    let material = materials.add(StandardMaterial{ 
-      base_color: Color::linear_rgba(0., 0.9, 0., 0.2), alpha_mode: AlphaMode::Blend,
+) {
+  for (entity, collider, transform) in query.iter() {
+    let material = materials.add(StandardMaterial {
+      base_color: Color::linear_rgba(0., 0.9, 0., 0.2),
+      alpha_mode: AlphaMode::Blend,
       ..Default::default()
     });
     commands.spawn((
@@ -43,7 +43,6 @@ fn add_collision_shell(
     ));
   }
 }
-
 
 fn detect_collisions(
   player: Query<(Entity, &Collider, &GlobalTransform), With<Player>>,

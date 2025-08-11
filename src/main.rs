@@ -7,18 +7,33 @@ mod game;
 mod game_manager;
 mod health;
 mod input;
+mod lights;
 mod movement;
 mod pause_screen;
 mod player;
 mod roid;
 mod scheduling;
 mod start_screen;
-mod lights;
 
-use bevy::{asset::AssetMetaCheck, math::VectorSpace, prelude::*, window::WindowCloseRequested};
+use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, game::GamePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, start_screen::StartScreenPlugin
+  asset_loader::AssetLoaderPlugin,
+  bounds::BoundsPlugin,
+  bullet::BulletPlugin,
+  camera::CameraPlugin,
+  collision::CollisionPlugin,
+  game::GamePlugin,
+  game_manager::{GameManagerPlugin, GameState, GameStateEvent},
+  health::HealthPlugin,
+  input::GameInputPlugin,
+  lights::LightPlugin,
+  movement::MovementPlugin,
+  pause_screen::PauseScreenPlugin,
+  player::PlayerPlugin,
+  roid::RoidPlugin,
+  scheduling::SchedulingPlugin,
+  start_screen::StartScreenPlugin,
 };
 
 const APP_NAME: &str = "Roids";
@@ -30,7 +45,6 @@ fn main() {
 pub fn run_game() {
   App::new()
     .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.15)))
-
     .add_plugins(
       DefaultPlugins
         .set(WindowPlugin {
@@ -67,32 +81,27 @@ pub fn run_game() {
       HealthPlugin,
       SchedulingPlugin,
     ))
-    .add_plugins((
-      LightPlugin,
-    ))
+    .add_plugins((LightPlugin,))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
     .run();
 }
 
-
-fn test_sphere(
-  mut commands:Commands,
+fn _test_sphere(
+  mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
-){
-  let material = materials.add(StandardMaterial{ 
-      base_color: Color::WHITE.into(),
-      ..Default::default()
-    });
-    commands.spawn((
-      Mesh3d(meshes.add(Sphere::new(10.).mesh().uv(32,18))),
-      MeshMaterial3d(material),
-      Transform::from_translation(Vec3::ZERO),
-    ));
-
+) {
+  let material = materials.add(StandardMaterial {
+    base_color: Color::WHITE.into(),
+    ..Default::default()
+  });
+  commands.spawn((
+    Mesh3d(meshes.add(Sphere::new(10.).mesh().uv(32, 18))),
+    MeshMaterial3d(material),
+    Transform::from_translation(Vec3::ZERO),
+  ));
 }
-
 
 fn shutdown_detect(
   mut ev_windows_close_reader: EventReader<WindowCloseRequested>,

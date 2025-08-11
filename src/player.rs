@@ -22,7 +22,7 @@ const PLAYER_BULLET_FORWARD_OFFSET: f32 = 2.5;
 const PLAYER_BULLET_VELOCITY: f32 = 60.;
 const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
-const PLAYER_COLLLISION_RADIUS:f32 = 1.6;
+const PLAYER_COLLLISION_RADIUS: f32 = 1.6;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -45,12 +45,8 @@ pub struct Player {
   next_shoot_time: f32,
 }
 
-fn create_player(
-  mut commands: Commands,
-  scene_assets: Res<SceneAssets>,
-) {
-
-commands.spawn((
+fn create_player(mut commands: Commands, scene_assets: Res<SceneAssets>) {
+  commands.spawn((
     Player { ..default() },
     SceneRoot(scene_assets.ship.clone()),
     Transform::from_translation(PLAYER_START_TRANSLATION),

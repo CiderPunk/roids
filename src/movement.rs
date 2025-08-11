@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::scheduling::GameSchedule;
 
-const STOPPED_SPEED_SQUARED: f32 = 2.;
+//const STOPPED_SPEED_SQUARED: f32 = 2.;
 
 pub struct MovementPlugin;
 
