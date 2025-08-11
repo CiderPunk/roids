@@ -13,7 +13,8 @@ impl Plugin for CollisionPlugin {
       PostUpdate,
       (detect_bullet_collisions, detect_collisions).in_set(GameSchedule::CollisionDetection),
     )
-    .add_systems(Update, add_collision_shell);
+    //.add_systems(Update, add_collision_shell)
+    ;
   }
 }
 
