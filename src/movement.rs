@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::PauseState;
+use crate::scheduling::GameSchedule;
 
 const STOPPED_SPEED_SQUARED: f32 = 2.;
 
@@ -12,7 +12,7 @@ impl Plugin for MovementPlugin {
       Update,
       (update_velocity, update_position, update_rotation)
         .chain()
-        .run_if(in_state(PauseState::Running)),
+        .in_set(GameSchedule::EntityUpdates),
     );
   }
 }

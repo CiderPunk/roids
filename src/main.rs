@@ -11,6 +11,7 @@ mod movement;
 mod pause_screen;
 mod player;
 mod roid;
+mod scheduling;
 mod start_screen;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
@@ -29,6 +30,7 @@ use crate::{
   pause_screen::PauseScreenPlugin,
   player::PlayerPlugin,
   roid::RoidPlugin,
+  scheduling::SchedulingPlugin,
   start_screen::StartScreenPlugin,
 };
 
@@ -80,6 +82,7 @@ pub fn run_game() {
       RoidPlugin,
       CollisionPlugin,
       HealthPlugin,
+      SchedulingPlugin,
     ))
     .add_systems(PreUpdate, check_window)
     .run();

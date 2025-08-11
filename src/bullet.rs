@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, game::PauseState, movement::Velocity};
+use crate::{
+  asset_loader::SceneAssets, bounds::BoundsWarp, game::PauseState, movement::Velocity,
+  scheduling::GameSchedule,
+};
 
 pub struct BulletPlugin;
 
@@ -11,7 +14,7 @@ impl Plugin for BulletPlugin {
       .add_event::<BulletHitEvent>()
       .add_systems(
         Update,
-        (do_shooting, time_to_live, bullet_hit).run_if(in_state(PauseState::Running)),
+        (do_shooting, time_to_live, bullet_hit).in_set(GameSchedule::EntityUpdates),
       );
   }
 }

@@ -1,22 +1,23 @@
 use bevy::prelude::*;
 
+use crate::scheduling::GameSchedule;
+
 pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
-    app
-      .add_event::<HealthEvent>()
-      .add_systems(Update, apply_health_changes)
-      .add_systems(Update, remove_dead);
+    app.add_event::<HealthEvent>().add_systems(
+      Update,
+      (
+        apply_health_changes.in_set(GameSchedule::HealthAdjust),
+        remove_dead.in_set(GameSchedule::DespawnEntities),
+      ),
+    );
   }
 }
 
-
-fn remove_dead(
-  mut commands:Commands, 
-  query:Query<(Entity,&Health)>
-){
-  for (entity, health) in query.iter(){
-    if health.value <= 0.{
+fn remove_dead(mut commands: Commands, query: Query<(Entity, &Health)>) {
+  for (entity, health) in query.iter() {
+    if health.value <= 0. {
       commands.entity(entity).despawn();
     }
   }

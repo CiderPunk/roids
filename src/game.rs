@@ -26,6 +26,7 @@ pub enum PauseState {
 fn init_game(mut ev_game_state: EventWriter<GameStateEvent>) {
   info!("Game initialized");
   ev_game_state.write(GameStateEvent::new(GameState::Playing));
+  //next_state.set(PauseState::Running);
 }
 
 fn update_game(

@@ -1,4 +1,4 @@
-use crate::game_manager::GameState;
+use crate::{game_manager::GameState, scheduling::GameSchedule};
 use bevy::{
   asset::RenderAssetUsages,
   prelude::*,
@@ -19,7 +19,13 @@ impl Plugin for BoundsPlugin {
     app
       .add_plugins(MaterialPlugin::<CustomMaterial>::default())
       .add_systems(OnEnter(GameState::GameInit), build_bounds_mesh)
-      .add_systems(Update, (bounds_despawn, bounds_warp));
+      .add_systems(
+        Update,
+        (
+          bounds_despawn.in_set(GameSchedule::DespawnEntities),
+          bounds_warp.in_set(GameSchedule::EntityUpdates),
+        ),
+      );
   }
 }
 
