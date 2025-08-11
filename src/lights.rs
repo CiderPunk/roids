@@ -42,7 +42,7 @@ fn spawn_lights(mut commands: Commands) {
   commands.spawn((
     PointLight {
       color: WHITE.into(),
-      intensity: 500_000_000.0,
+      intensity: 700_000_000.0,
       range: 500.,
       //shadows_enabled: true,
       ..default()
