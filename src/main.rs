@@ -3,7 +3,6 @@ mod bounds;
 mod bullet;
 mod camera;
 mod collision;
-mod game;
 mod game_manager;
 mod health;
 mod input;
@@ -13,27 +12,12 @@ mod pause_screen;
 mod player;
 mod roid;
 mod scheduling;
-mod start_screen;
+mod modal_screen;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin,
-  bounds::BoundsPlugin,
-  bullet::BulletPlugin,
-  camera::CameraPlugin,
-  collision::CollisionPlugin,
-  game::GamePlugin,
-  game_manager::{GameManagerPlugin, GameState, GameStateEvent},
-  health::HealthPlugin,
-  input::GameInputPlugin,
-  lights::LightPlugin,
-  movement::MovementPlugin,
-  pause_screen::PauseScreenPlugin,
-  player::PlayerPlugin,
-  roid::RoidPlugin,
-  scheduling::SchedulingPlugin,
-  start_screen::StartScreenPlugin,
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin,  game_manager::{GameManagerPlugin, GameState, GameStateEvent}, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::{ModalScreenPlugin}, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin
 };
 
 const APP_NAME: &str = "Roids";
@@ -67,21 +51,21 @@ pub fn run_game() {
     .add_plugins((
       AssetLoaderPlugin,
       GameManagerPlugin,
-      StartScreenPlugin,
+      LightPlugin,
       CameraPlugin,
       GameInputPlugin,
-      GamePlugin,
       PlayerPlugin,
       MovementPlugin,
-      PauseScreenPlugin,
       BulletPlugin,
       BoundsPlugin,
       RoidPlugin,
       CollisionPlugin,
       HealthPlugin,
+    ))
+    .add_plugins((
+      ModalScreenPlugin,
       SchedulingPlugin,
     ))
-    .add_plugins((LightPlugin,))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
     .run();

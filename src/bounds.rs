@@ -1,4 +1,4 @@
-use crate::{game_manager::GameState, scheduling::GameSchedule};
+use crate::{game_manager::{GameEntity, GameState}, scheduling::GameSchedule};
 use bevy::{
   asset::RenderAssetUsages,
   prelude::*,
@@ -101,6 +101,7 @@ fn build_bounds_mesh(
   });
 
   commands.spawn((
+    GameEntity,
     Bounds {
       half_size: BOUNDS_SIZE,
     },

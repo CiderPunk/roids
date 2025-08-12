@@ -5,7 +5,7 @@ use crate::{
   bounds::BoundsWarp,
   bullet::ShootEvent,
   collision::Collider,
-  game_manager::GameState,
+  game_manager::{GameEntity, GameState},
   health::Health,
   input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
   movement::{Acceleration, Rotation, Velocity},
@@ -22,21 +22,23 @@ const PLAYER_BULLET_FORWARD_OFFSET: f32 = 2.5;
 const PLAYER_BULLET_VELOCITY: f32 = 60.;
 const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
-const PLAYER_COLLLISION_RADIUS: f32 = 1.6;
+const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES:u32= 3;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app
-      .init_state::<PlayerState>()
       .add_systems(OnEnter(GameState::GameInit), create_player)
-      .add_systems(OnEnter(PlayerState::Alive), create_ship)
+      .add_systems(OnEnter(GameState::Alive), create_ship)
       .add_systems(
         Update,
-        (update_player_movement, update_player_action, player_shoot)
-          .in_set(GameSchedule::EntityUpdates),
-      );
+        (
+          (update_player_movement, update_player_action, player_shoot)
+            .in_set(GameSchedule::EntityUpdates),
+          check_player_health
+            .in_set(GameSchedule::PreDespawnEntities),
+        ));
   }
 }
 
@@ -48,12 +50,7 @@ pub struct PlayerShip {
   next_shoot_time: f32,
 }
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
-pub enum PlayerState {
-  Alive,
-  #[default]
-  Dead,
-}
+
 
 #[derive(Component, Default)]
 pub struct Player{
@@ -61,14 +58,35 @@ pub struct Player{
   score:u32,
 }
 
+fn check_player_health(
+  query: Query<&Health, With<PlayerShip>>,
+  player:Single<&Player>,
+  mut next_state: ResMut<NextState<GameState>>,
+) {
+  for health in query{
+    if health.value <= 0.{
+      info!("Player dead");
+      if player.lives > 0 {
+        next_state.set(GameState::Dead);
+      }
+      else{
+         next_state.set(GameState::GameOver);
+      }
+    }
+  }
+}
+
 
 fn create_player(
+  query:Query<Entity, With<Player>>,
   mut commands:Commands, 
-  mut next_state:ResMut<NextState<PlayerState>>,
 ){
+  //delete old player
+  for entity in query{
+    commands.entity(entity).despawn();
+  }
+
   info!("Create player");
-  next_state.set(PlayerState::Alive);
-  
   commands.spawn(Player{
     lives: PLAYER_START_LIVES,
     score:0,
@@ -76,9 +94,15 @@ fn create_player(
 
 }
 
-fn create_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
+fn create_ship(
+  mut commands: Commands,
+  scene_assets: Res<SceneAssets>,
+  mut player:Single<&mut Player>,
+) {
+  player.lives-=1;
   info!("Create ship");
   commands.spawn((
+    GameEntity,
     PlayerShip { ..default() },
     SceneRoot(scene_assets.ship.clone()),
     Transform::from_translation(PLAYER_START_TRANSLATION),

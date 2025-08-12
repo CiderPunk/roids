@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{color::palettes::css::WHITE, prelude::*};
 
-use crate::{game_manager::GameState, scheduling::GameSchedule};
+use crate::{game_manager::{GameEntity, GameState}, scheduling::GameSchedule};
 
 pub struct LightPlugin;
 
@@ -40,9 +40,10 @@ fn rotate_lights(time: Res<Time>, query: Query<(&mut RotateLight, &mut Transform
 fn spawn_lights(mut commands: Commands) {
   info!("spawning lights!");
   commands.spawn((
+    GameEntity,
     PointLight {
       color: WHITE.into(),
-      intensity: 700_000_000.0,
+      intensity: 1700_000_000.0,
       range: 500.,
       //shadows_enabled: true,
       ..default()
@@ -56,9 +57,10 @@ fn spawn_lights(mut commands: Commands) {
   ));
 
   commands.spawn((
+    GameEntity,
     PointLight {
       color: WHITE.into(),
-      intensity: 200_000_000.0,
+      intensity: 400_000_000.0,
       range: 500.,
       //shadows_enabled: true,
       ..default()

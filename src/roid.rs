@@ -4,7 +4,7 @@ use crate::{
   asset_loader::SceneAssets,
   bounds::BoundsWarp,
   collision::Collider,
-  game_manager::GameState,
+  game_manager::{GameEntity, GameState},
   health::Health,
   movement::{Rotation, Velocity},
   scheduling::GameSchedule,
@@ -28,7 +28,7 @@ const ROID_LARGE_SCALE: Vec3 = Vec3::splat(5.);
 const ROID_MEDIUM_SCALE: Vec3 = Vec3::splat(3.);
 const ROID_SMALL_SCALE: Vec3 = Vec3::splat(1.);
 
-const ROID_LARGE_RADIUS: f32 = 6.;
+const ROID_LARGE_RADIUS: f32 = 6.5;
 const ROID_MEDIUM_RADIUS: f32 = 4.;
 const ROID_SMALL_RADIUS: f32 = 1.5;
 
@@ -93,6 +93,7 @@ fn check_asteroid_health(
       );
 
       commands.spawn((
+        GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(true),
         Transform::from_translation(transform.translation()).with_scale(scale),
@@ -138,6 +139,7 @@ fn spawn_roids(mut commands: Commands, scene_assets: Res<SceneAssets>) {
     //let velocity = Vec3::ZERO;
 
     commands.spawn((
+      GameEntity,
       Roid(RoidSize::Large),
       BoundsWarp(false),
       Transform::from_translation(start_position).with_scale(ROID_LARGE_SCALE),
