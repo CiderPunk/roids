@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
   bullet::{Bullet, BulletHitEvent},
   health::HealthEvent,
-  player::Player,
+  player::PlayerShip,
   scheduling::GameSchedule,
 };
 pub struct CollisionPlugin;
@@ -45,8 +45,8 @@ fn _add_collision_shell(
 }
 
 fn detect_collisions(
-  player: Query<(Entity, &Collider, &GlobalTransform), With<Player>>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<Player>>,
+  player: Query<(Entity, &Collider, &GlobalTransform), With<PlayerShip>>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
   mut ev_health_writer: EventWriter<HealthEvent>,
 ) {
   for (player_entity, player_collider, player_transform) in player.iter() {
@@ -74,8 +74,8 @@ fn detect_collisions(
 
 fn detect_bullet_collisions(
   bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
-  players: Query<(Entity, &Collider, &GlobalTransform), With<Player>>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<Player>>,
+  players: Query<(Entity, &Collider, &GlobalTransform), With<PlayerShip>>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
   mut ev_health_writer: EventWriter<HealthEvent>,
   mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
 ) {

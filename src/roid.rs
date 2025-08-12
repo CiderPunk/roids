@@ -86,6 +86,12 @@ fn check_asteroid_health(
     }
 
     for _ in 0..2 {
+      let rotation = Vec3::new(
+        rng.random_range(-1. ..1.),
+        rng.random_range(-1. ..1.),
+        rng.random_range(-1. ..1.),
+      );
+
       commands.spawn((
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(true),
@@ -108,6 +114,7 @@ fn check_asteroid_health(
           damage: ROID_COLLISION_DAMAGE,
         },
         Roid(next_size.clone()),
+        Rotation(rotation),
       ));
     }
   }

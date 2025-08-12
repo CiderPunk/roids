@@ -23,12 +23,15 @@ const PLAYER_BULLET_VELOCITY: f32 = 60.;
 const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.6;
+const PLAYER_START_LIVES:u32= 3;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app
+      .init_state::<PlayerState>()
       .add_systems(OnEnter(GameState::GameInit), create_player)
+      .add_systems(OnEnter(PlayerState::Alive), create_ship)
       .add_systems(
         Update,
         (update_player_movement, update_player_action, player_shoot)
@@ -39,15 +42,44 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Component, Default)]
 #[require(Transform, Velocity, Acceleration, Rotation)]
-pub struct Player {
+pub struct PlayerShip {
   shoot: bool,
   shield: bool,
   next_shoot_time: f32,
 }
 
-fn create_player(mut commands: Commands, scene_assets: Res<SceneAssets>) {
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
+pub enum PlayerState {
+  Alive,
+  #[default]
+  Dead,
+}
+
+#[derive(Component, Default)]
+pub struct Player{
+  lives:u32,
+  score:u32,
+}
+
+
+fn create_player(
+  mut commands:Commands, 
+  mut next_state:ResMut<NextState<PlayerState>>,
+){
+  info!("Create player");
+  next_state.set(PlayerState::Alive);
+  
+  commands.spawn(Player{
+    lives: PLAYER_START_LIVES,
+    score:0,
+  });
+
+}
+
+fn create_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
+  info!("Create ship");
   commands.spawn((
-    Player { ..default() },
+    PlayerShip { ..default() },
     SceneRoot(scene_assets.ship.clone()),
     Transform::from_translation(PLAYER_START_TRANSLATION),
     Velocity(Vec3::new(0., 0., 1.)),
@@ -73,7 +105,7 @@ fn create_player(mut commands: Commands, scene_assets: Res<SceneAssets>) {
 fn update_player_movement(
   //mut commands:Commands,
   mut ev_input_movement_event: EventReader<InputMovementEvent>,
-  ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<Player>>,
+  ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<PlayerShip>>,
 ) {
   let (transform, mut acceleration, mut rotation) = ship.into_inner();
   for InputMovementEvent { direction } in ev_input_movement_event.read() {
@@ -84,7 +116,7 @@ fn update_player_movement(
 
 fn update_player_action(
   mut ev_input_trigger_event: EventReader<InputTriggerEvent>,
-  ship: Single<&mut Player>,
+  ship: Single<&mut PlayerShip>,
 ) {
   let mut player = ship.into_inner();
   for InputTriggerEvent { action, input_type } in ev_input_trigger_event.read() {
@@ -98,7 +130,7 @@ fn update_player_action(
 }
 
 fn player_shoot(
-  query: Single<(Entity, &mut Player, &GlobalTransform, &Velocity)>,
+  query: Single<(Entity, &mut PlayerShip, &GlobalTransform, &Velocity)>,
   time: Res<Time>,
   mut ev_shoot_event: EventWriter<ShootEvent>,
 ) {
