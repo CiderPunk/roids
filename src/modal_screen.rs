@@ -1,6 +1,9 @@
-use bevy::prelude::*;
+use std::f32::consts::PI;
 
-use crate::{asset_loader::SceneAssets, game_manager::GameState, input::{InputEventAction, InputEventType, InputTriggerEvent}};
+use bevy::{color::palettes::css::WHITE, prelude::*};
+use rand::Rng;
+
+use crate::{asset_loader::SceneAssets, game_manager::GameState, input::{InputEventAction, InputEventType, InputTriggerEvent}, movement::Rotation};
 
 
 const FONT_SIZE_HUGE: f32 = 190.;
@@ -143,6 +146,45 @@ commands.spawn((
       right: Val::Px(10.0),
       ..default()
     },
+  ));
+
+
+  let mut rng = rand::rng();
+  let rotation = Vec3::new(
+    rng.random_range(-0.1 .. 0.1),
+    rng.random_range(-0.1 .. 0.1),
+    rng.random_range(-0.1 ..0.1),
+  );
+  let rotation2 = Vec3::new(
+    rng.random_range(-0.1 .. 0.1),
+    rng.random_range(-0.1 .. 0.1),
+    rng.random_range(-0.1 ..0.1),
+  );
+  commands.spawn((
+    ModalScreenElement,
+    Transform::from_translation(Vec3::new(-16.,130.,1.)).with_scale(Vec3::splat(8.0)),
+    SceneRoot(scene_assets.roid1.clone()),
+    Rotation(rotation),
+  ));
+
+  commands.spawn((
+    ModalScreenElement,
+    Transform::from_translation(Vec3::new(12.,90.,-22.)).with_scale(Vec3::splat(6.0)).with_rotation(Quat::from_rotation_x(PI)),
+    SceneRoot(scene_assets.roid1.clone()),
+    Rotation(rotation2),
+  ));
+
+  commands.spawn((
+    ModalScreenElement,
+    PointLight {
+      color: WHITE.into(),
+      intensity: 1700_000_000.0,
+      range: 500.,
+      //shadows_enabled: true,
+      ..default()
+    },
+    Transform::from_translation(Vec3::new(30., 40., 40.)),
+
   ));
 }
 
