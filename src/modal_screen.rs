@@ -162,14 +162,16 @@ commands.spawn((
   );
   commands.spawn((
     ModalScreenElement,
-    Transform::from_translation(Vec3::new(-16.,130.,1.)).with_scale(Vec3::splat(8.0)),
+    Transform::from_translation(Vec3::new(-16.,130.,1.)).with_scale(Vec3::splat(8.0))
+      .with_rotation(Quat::from_euler(EulerRot::XYZ,  rng.random_range(0. .. PI* 2.), rng.random_range(0. .. PI * 2.), rng.random_range(0. .. PI * 2.))),
     SceneRoot(scene_assets.roid1.clone()),
     Rotation(rotation),
   ));
 
   commands.spawn((
     ModalScreenElement,
-    Transform::from_translation(Vec3::new(12.,90.,-22.)).with_scale(Vec3::splat(6.0)).with_rotation(Quat::from_rotation_x(PI)),
+    Transform::from_translation(Vec3::new(12.,90.,-22.)).with_scale(Vec3::splat(6.0))
+      .with_rotation(Quat::from_euler(EulerRot::XYZ,  rng.random_range(0. .. PI* 2.), rng.random_range(0. .. PI * 2.), rng.random_range(0. .. PI * 2.))),
     SceneRoot(scene_assets.roid1.clone()),
     Rotation(rotation2),
   ));

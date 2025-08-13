@@ -13,11 +13,12 @@ mod player;
 mod roid;
 mod scheduling;
 mod modal_screen;
+mod starfield;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin,  game_manager::{GameManagerPlugin, GameState, GameStateEvent}, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::{ModalScreenPlugin}, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin,  game_manager::{GameManagerPlugin, GameState, GameStateEvent}, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
 };
 
 const APP_NAME: &str = "Roids";
@@ -65,6 +66,7 @@ pub fn run_game() {
     .add_plugins((
       ModalScreenPlugin,
       SchedulingPlugin,
+      StarfieldPlugin,
     ))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)

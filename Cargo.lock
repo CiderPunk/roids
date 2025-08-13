@@ -1085,6 +1085,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_spritesheet_animation"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57d6a2a881c12b258b43601122e452f7e441657c50e49d53599d5dd88de1a752"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_state"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3683,6 +3692,7 @@ name = "roids"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_spritesheet_animation",
  "rand 0.9.2",
 ]
 
