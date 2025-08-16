@@ -1,15 +1,9 @@
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds::BoundsWarp,
-  collision::Collider,
-  game_manager::{GameEntity, GameState},
-  health::Health,
-  movement::{Rotation, Velocity},
-  scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Rotation, Velocity}, scheduling::GameSchedule
 };
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 use rand::Rng;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash, Default)]
@@ -53,6 +47,7 @@ struct Roid(RoidSize);
 fn check_asteroid_health(
   mut commands: Commands,
   query: Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
+  mut ev_effect_writer:EventWriter<EffectSpriteEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
   let mut rng = rand::rng();
@@ -64,6 +59,8 @@ fn check_asteroid_health(
       continue;
     }
 
+    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 2., velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+    
     let scale: Vec3;
     let collider_radius: f32;
     let next_size: RoidSize;

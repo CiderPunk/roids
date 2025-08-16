@@ -51,13 +51,17 @@ fn hash32(p: vec2<f32>) -> vec3<f32>
 fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
-  let point = hash12(mesh.uv * 2000. + (globals.time * 0.000001));
-  if point > 0.999{
-    return vec4(1.,1.,1.,1.);
+
+
+  const tgt = 0.0002;
+  const threshold = 1.0 - tgt;
+  let point = hash12(mesh.uv * 2000. + fract(globals.time * 0.000001));
+  if point > threshold{
+    let intensity = (point - threshold) / tgt;
+    return vec4(vec3(intensity),intensity);
   }
   else{
     return vec4(0.,0.,0.,1.);
-
   }
   //return vec4(point,point,point,1.);
 }

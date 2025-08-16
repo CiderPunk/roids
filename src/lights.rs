@@ -13,7 +13,7 @@ impl Plugin for LightPlugin {
       .add_systems(Update, rotate_lights.in_set(GameSchedule::EntityUpdates))
       .insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 250.0,
+        brightness: 50.0,
         ..Default::default()
       });
   }
