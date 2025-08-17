@@ -5,7 +5,7 @@ use rand::Rng;
 
 use crate::{asset_loader::{AssetsLoading, SceneAssets}, game_manager::GameEntity, movement::Velocity};
 pub struct EffectSpritePlugin;
-const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv_temp.wgsl";
+const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv.wgsl";
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EffectSpriteType{

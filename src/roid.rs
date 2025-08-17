@@ -55,12 +55,22 @@ fn check_asteroid_health(
     if health.value > 0. {
       continue;
     }
+
+
+    let scale = match roid.0{ 
+      RoidSize::Large=>16., 
+      RoidSize::Medium=>12., 
+      RoidSize::Small=>8.
+    };
+    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), scale, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+   
+
+
     if roid.0 == RoidSize::Small {
       continue;
     }
 
-    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 8., velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
-    
+ 
     let scale: Vec3;
     let collider_radius: f32;
     let next_size: RoidSize;
