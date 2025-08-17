@@ -61,7 +61,7 @@ fn bullet_hit(
     commands.entity(bullet).despawn();
     let Ok(transform) = query.get(bullet) else { continue; }; 
     info!("{:}",transform.translation());
-    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 1.,Vec3::ZERO, crate::effect_sprite::EffectSpriteType::Ricochet));
+    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 4.,Vec3::ZERO, crate::effect_sprite::EffectSpriteType::Ricochet));
 
   }
 }

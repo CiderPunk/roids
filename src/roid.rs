@@ -59,7 +59,7 @@ fn check_asteroid_health(
       continue;
     }
 
-    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 2., velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 8., velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
     
     let scale: Vec3;
     let collider_radius: f32;

@@ -31,7 +31,7 @@ fn rotate_lights(time: Res<Time>, query: Query<(&mut RotateLight, &mut Transform
     rotate.rotation += time.delta_secs() * rotate.rate;
     transform.translation = Vec3::new(
       rotate.distance * rotate.rotation.sin(),
-      50.,
+      -50.,
       rotate.distance * rotate.rotation.cos(),
     );
   }
@@ -48,7 +48,7 @@ fn spawn_lights(mut commands: Commands) {
       //shadows_enabled: true,
       ..default()
     },
-    Transform::from_translation(Vec3::new(100., 50., 100.)),
+    Transform::from_translation(Vec3::new(100., -50., 100.)),
     RotateLight {
       distance: 200.,
       rotation: 0.,
@@ -65,7 +65,7 @@ fn spawn_lights(mut commands: Commands) {
       //shadows_enabled: true,
       ..default()
     },
-    Transform::from_translation(Vec3::new(100., 50., 100.)),
+    Transform::from_translation(Vec3::new(100., -50., 100.)),
     RotateLight {
       distance: 200.,
       rotation: PI,

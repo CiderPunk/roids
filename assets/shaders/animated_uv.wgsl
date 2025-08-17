@@ -17,8 +17,8 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
   //get tag time which is the animstart time f32 bitcast to u32
   let tag = mesh_functions::get_tag(mesh.instance_index);
   //convert it back to f32
-  let start_time = bitcast<f32>(tag);
-
+  let start_time = bitcast<f32>(tag); 
+  
   let frame = floor((globals.time - start_time) * settings.frame_rate);
   if frame > setting.frame_count{
     return (1.,0.,0.,1.);

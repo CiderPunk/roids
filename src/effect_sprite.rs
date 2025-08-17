@@ -1,11 +1,11 @@
 use std::f32::consts::PI;
 
-use bevy::{audio::Sample, diagnostic::FrameCount, platform::collections::HashMap, prelude::*, render::{mesh::MeshTag, render_resource::{AsBindGroup, ShaderRef, ShaderType}}};
+use bevy::{asset::RenderAssetUsages, audio::Sample, diagnostic::FrameCount, platform::collections::HashMap, prelude::*, render::{mesh::MeshTag, render_resource::{AsBindGroup, ShaderRef, ShaderType}}};
 use rand::Rng;
 
-use crate::{asset_loader::AssetsLoading, movement::Velocity};
+use crate::{asset_loader::{AssetsLoading, SceneAssets}, game_manager::GameEntity, movement::Velocity};
 pub struct EffectSpritePlugin;
-const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv.wgsl";
+const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv_temp.wgsl";
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EffectSpriteType{
@@ -39,7 +39,7 @@ const EFFECTS:[EffectSpriteDef; 2] = [
     frame_count: 8,
     horizontal_frames: 4,
     vertical_frames: 2,
-    frame_rate: 5.,
+    frame_rate: 30.,
   },
 ];
 
@@ -116,6 +116,11 @@ pub struct EffectSpriteMaterial {
 }
 
 impl Material for EffectSpriteMaterial {
+
+  fn vertex_shader() -> ShaderRef {
+    EFFECT_SPRITE_SHADER_PATH.into()
+  }
+
   fn fragment_shader() -> ShaderRef {
     EFFECT_SPRITE_SHADER_PATH.into()
   }
@@ -134,7 +139,8 @@ fn init_effect_sprite(
   //time:Res<Time>,
 
 ){
-  let quad = meshes.add((Rectangle::new(8.,8.)));
+  let quad = meshes.add(create_quad());
+  //let quad = meshes.add(Sphere::new(2.).mesh().uv(32, 18));
   commands.insert_resource(EffectQuad(quad));
 
   for effect in EFFECTS{
@@ -162,7 +168,19 @@ fn init_effect_sprite(
   }
 }
 
-
+fn create_quad()-> Mesh{
+  Mesh::new(bevy::render::mesh::PrimitiveTopology::TriangleList, RenderAssetUsages::default())
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, 
+      vec![[-1.,0.,-1.],[1.,0.,-1.],[1.,0.,1.],[-1.,0.,1.]])
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, 
+      vec![[0.,0.],[1.,0.],[1.,1.],[0.,1.]])
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL,
+      vec![[0.0, 1.0, 0.0],[0.0, 1.0, 0.0],[0.0, 1.0, 0.0],[0.0, 1.0, 0.0]])
+    .with_inserted_indices(bevy::render::mesh::Indices::U32(vec![
+      0,2,1,
+      0,3,2,
+    ]))
+}
 
 fn spawn_effect_sprites(
   mut commands:Commands,
@@ -170,6 +188,7 @@ fn spawn_effect_sprites(
   mesh:Res<EffectQuad>,
   effects:Res<EffectCollection>,
   time:Res<Time>,
+  scene_assets:Res<SceneAssets>,
 ){
   let mut rng = rand::rng();
   for sprite in ev_effect_reader.read(){
@@ -180,18 +199,20 @@ fn spawn_effect_sprites(
     info!("spawning effect ");
     let transform = Transform::from_translation(sprite.translation)
       .with_scale(Vec3::splat(sprite.scale))
-      .with_rotation(Quat::from_euler(EulerRot::XZX, PI * -0.5, rng.random_range(-1. .. 1.) * PI, 0.));
+      //.with_rotation(Quat::from_euler(EulerRot::XZX, PI * -0.5, rng.random_range(-1. .. 1.) * PI, 0.));
+      .with_rotation(Quat::from_rotation_y(rng.random_range(-1. .. 1.) * PI));
 
-    let offset = time.elapsed_secs_wrapped().to_bits();
+    let offset:f32 = time.elapsed_secs_wrapped();
 
     info!(offset);
     commands.spawn((
+      GameEntity,
       EffectSprite{ timer: Timer::from_seconds(effect.animation_time, TimerMode::Once) }, 
       Mesh3d(mesh.0.clone()),
       MeshMaterial3d( effect.material.clone() ),
       Velocity(sprite.velocity),
       transform,
-      MeshTag(offset),
+      MeshTag(offset.to_bits()),
     ));
   }
 }
