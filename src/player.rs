@@ -23,7 +23,7 @@ const PLAYER_BULLET_VELOCITY: f32 = 60.;
 const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
-const PLAYER_START_LIVES:u32= 3;
+const PLAYER_START_LIVES: u32 = 3;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -36,9 +36,9 @@ impl Plugin for PlayerPlugin {
         (
           (update_player_movement, update_player_action, player_shoot)
             .in_set(GameSchedule::EntityUpdates),
-          check_player_health
-            .in_set(GameSchedule::PreDespawnEntities),
-        ));
+          check_player_health.in_set(GameSchedule::PreDespawnEntities),
+        ),
+      );
   }
 }
 
@@ -50,56 +50,48 @@ pub struct PlayerShip {
   next_shoot_time: f32,
 }
 
-
-
 #[derive(Component, Default)]
-pub struct Player{
-  lives:u32,
-  score:u32,
+pub struct Player {
+  lives: u32,
+  score: u32,
 }
 
 fn check_player_health(
   query: Query<&Health, With<PlayerShip>>,
-  player:Single<&Player>,
+  player: Single<&Player>,
   mut next_state: ResMut<NextState<GameState>>,
 ) {
-  for health in query{
-    if health.value <= 0.{
+  for health in query {
+    if health.value <= 0. {
       info!("Player dead");
       if player.lives > 0 {
         next_state.set(GameState::Dead);
-      }
-      else{
-         next_state.set(GameState::GameOver);
+      } else {
+        next_state.set(GameState::GameOver);
       }
     }
   }
 }
 
-
-fn create_player(
-  query:Query<Entity, With<Player>>,
-  mut commands:Commands, 
-){
+fn create_player(query: Query<Entity, With<Player>>, mut commands: Commands) {
   //delete old player
-  for entity in query{
+  for entity in query {
     commands.entity(entity).despawn();
   }
 
   info!("Create player");
-  commands.spawn(Player{
+  commands.spawn(Player {
     lives: PLAYER_START_LIVES,
-    score:0,
+    score: 0,
   });
-
 }
 
 fn create_ship(
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
-  mut player:Single<&mut Player>,
+  mut player: Single<&mut Player>,
 ) {
-  player.lives-=1;
+  player.lives -= 1;
   info!("Create ship");
   commands.spawn((
     GameEntity,
@@ -124,6 +116,21 @@ fn create_ship(
       last_hurt_by: None,
     },
   ));
+
+  /*.with_child((
+
+      SpotLight {
+        intensity: 500_000_000.0, // lumens
+        color: Color::WHITE,
+        shadows_enabled: false,
+        inner_angle: PI /8. * 0.85,
+        outer_angle: PI / 8.,
+        range:50.,
+        ..default()
+      },
+      Transform::from_translation(Vec3::ZERO),
+    ));
+  */
 }
 
 fn update_player_movement(

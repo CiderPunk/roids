@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, game_manager::PauseState, input::{InputEventAction, InputEventType, InputTriggerEvent}
+  asset_loader::SceneAssets,
+  game_manager::PauseState,
+  input::{InputEventAction, InputEventType, InputTriggerEvent},
 };
 pub struct PauseScreenPlugin;
 impl Plugin for PauseScreenPlugin {
@@ -31,33 +33,30 @@ fn update_pause_screen(
   }
 }
 
-fn show_pause_screen(
-  mut commands: Commands, 
-  scene_assets: Res<SceneAssets>
-){
+fn show_pause_screen(mut commands: Commands, scene_assets: Res<SceneAssets>) {
   info!("show pause screen");
-  commands.spawn((
-    PauseScreenElement,
-    Node {
-      width: Val::Percent(100.0),
-      height: Val::Percent(100.0),
-      justify_content: JustifyContent::Center,
-      align_items: AlignItems::Center,
-      ..default()
-    },
-  ))
-  .with_children(|parent|{
-    parent.spawn((
-      Text::new("PAUSED"),
-      TextFont {
-        font: scene_assets.font.clone(),
-        font_size: 32.,
+  commands
+    .spawn((
+      PauseScreenElement,
+      Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(100.0),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
         ..default()
       },
-    ));
-  });
+    ))
+    .with_children(|parent| {
+      parent.spawn((
+        Text::new("PAUSED"),
+        TextFont {
+          font: scene_assets.font.clone(),
+          font_size: 32.,
+          ..default()
+        },
+      ));
+    });
 }
-
 
 fn remove_pause_screen(mut commands: Commands, query: Query<Entity, With<PauseScreenElement>>) {
   info!("despawning pause screen");

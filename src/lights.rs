@@ -2,7 +2,10 @@ use std::f32::consts::PI;
 
 use bevy::{color::palettes::css::WHITE, prelude::*};
 
-use crate::{game_manager::{GameEntity, GameState}, scheduling::GameSchedule};
+use crate::{
+  game_manager::{GameEntity, GameState},
+  scheduling::GameSchedule,
+};
 
 pub struct LightPlugin;
 
@@ -43,7 +46,7 @@ fn spawn_lights(mut commands: Commands) {
     GameEntity,
     PointLight {
       color: WHITE.into(),
-      intensity: 1700_000_000.0,
+      intensity: 1_700_000_000.0,
       range: 500.,
       //shadows_enabled: true,
       ..default()

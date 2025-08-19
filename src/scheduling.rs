@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 use crate::game_manager::PauseState;
 
-
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameSchedule {
   UserInput,

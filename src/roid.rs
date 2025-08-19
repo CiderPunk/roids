@@ -1,9 +1,16 @@
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Rotation, Velocity}, scheduling::GameSchedule
+  asset_loader::SceneAssets,
+  bounds::BoundsWarp,
+  collision::Collider,
+  effect_sprite::EffectSpriteEvent,
+  game_manager::{GameEntity, GameState},
+  health::Health,
+  movement::{Rotation, Velocity},
+  scheduling::GameSchedule,
 };
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 use rand::Rng;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash, Default)]
@@ -47,7 +54,7 @@ struct Roid(RoidSize);
 fn check_asteroid_health(
   mut commands: Commands,
   query: Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
-  mut ev_effect_writer:EventWriter<EffectSpriteEvent>,
+  mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
   let mut rng = rand::rng();
@@ -56,21 +63,22 @@ fn check_asteroid_health(
       continue;
     }
 
-
-    let scale = match roid.0{ 
-      RoidSize::Large=>16., 
-      RoidSize::Medium=>12., 
-      RoidSize::Small=>8.
+    let scale = match roid.0 {
+      RoidSize::Large => 16.,
+      RoidSize::Medium => 12.,
+      RoidSize::Small => 8.,
     };
-    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), scale, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
-   
-
+    ev_effect_writer.write(EffectSpriteEvent::new(
+      transform.translation(),
+      scale,
+      velocity.0,
+      crate::effect_sprite::EffectSpriteType::Splosion,
+    ));
 
     if roid.0 == RoidSize::Small {
       continue;
     }
 
- 
     let scale: Vec3;
     let collider_radius: f32;
     let next_size: RoidSize;

@@ -1,7 +1,8 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, effect_sprite::EffectSpriteEvent, game_manager::GameEntity, movement::Velocity, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, effect_sprite::EffectSpriteEvent,
+  game_manager::GameEntity, movement::Velocity, scheduling::GameSchedule,
 };
 
 pub struct BulletPlugin;
@@ -51,18 +52,24 @@ fn do_shooting(
 }
 
 fn bullet_hit(
-  mut commands: Commands, 
+  mut commands: Commands,
   mut ev_bullet_hit_reader: EventReader<BulletHitEvent>,
-  mut ev_effect_writer:EventWriter<EffectSpriteEvent>,
-  query:Query<&GlobalTransform>,
+  mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
+  query: Query<&GlobalTransform>,
 ) {
   for &BulletHitEvent { bullet } in ev_bullet_hit_reader.read() {
     //add effect
     commands.entity(bullet).despawn();
-    let Ok(transform) = query.get(bullet) else { continue; }; 
-    info!("{:}",transform.translation());
-    ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 4.,Vec3::ZERO, crate::effect_sprite::EffectSpriteType::Ricochet));
-
+    let Ok(transform) = query.get(bullet) else {
+      continue;
+    };
+    info!("{:}", transform.translation());
+    ev_effect_writer.write(EffectSpriteEvent::new(
+      transform.translation(),
+      4.,
+      Vec3::ZERO,
+      crate::effect_sprite::EffectSpriteType::Ricochet,
+    ));
   }
 }
 

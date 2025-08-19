@@ -3,23 +3,24 @@ mod bounds;
 mod bullet;
 mod camera;
 mod collision;
+mod effect_sprite;
 mod game_manager;
 mod health;
 mod input;
 mod lights;
+mod modal_screen;
 mod movement;
 mod pause_screen;
 mod player;
 mod roid;
 mod scheduling;
-mod modal_screen;
 mod starfield;
-mod effect_sprite;
+mod gane_ui;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, gane_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
 };
 
 const APP_NAME: &str = "Roids";
@@ -63,12 +64,14 @@ pub fn run_game() {
       RoidPlugin,
       CollisionPlugin,
       HealthPlugin,
+      PauseScreenPlugin,
     ))
     .add_plugins((
       ModalScreenPlugin,
       SchedulingPlugin,
       StarfieldPlugin,
       EffectSpritePlugin,
+      GameUiPlugin,
     ))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
@@ -81,7 +84,7 @@ fn _test_sphere(
   mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
   let material = materials.add(StandardMaterial {
-    base_color: Color::WHITE.into(),
+    base_color: Color::WHITE,
     ..Default::default()
   });
   commands.spawn((

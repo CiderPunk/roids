@@ -70,10 +70,9 @@ fn check_load_state(
   if loading
     .0
     .iter()
-    .any(|asset| match asset_server.get_load_state(asset.id()) {
-      Some(LoadState::Loaded) => false,
-      _ => true,
-    })
+    .any(|asset|
+      !matches!(asset_server.get_load_state(asset.id()), Some(LoadState::Loaded) )
+    )
   {
     return;
   }

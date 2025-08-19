@@ -1,4 +1,6 @@
-use crate::{game_manager::{GameEntity, GameState}, scheduling::GameSchedule};
+use crate::{
+  camera::CameraBoundsChangeEvent, game_manager::{GameEntity, GameState}, scheduling::GameSchedule
+};
 use bevy::{
   asset::RenderAssetUsages,
   prelude::*,
@@ -9,7 +11,8 @@ use bevy::{
 };
 
 const BOUNDS_SHADER_PATH: &str = "shaders/bounds_material.wgsl";
-const BOUNDS_SIZE: Vec3 = Vec3::new(115.0, 0., 65.0);
+//const BOUNDS_SIZE: Vec3 = Vec3::new(115.0, 0., 65.0);
+const BOUNDS_SIZE: Vec3 = Vec3::new(150.0, 0., 150.0);
 const BOUNDS_BORDER_SIZE: f32 = 20.;
 
 pub struct BoundsPlugin;
@@ -18,7 +21,7 @@ impl Plugin for BoundsPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_plugins(MaterialPlugin::<CustomMaterial>::default())
-      .add_systems(OnEnter(GameState::GameInit), build_bounds_mesh)
+      .add_systems(OnEnter(GameState::GameInit), spawn_bounds)
       .add_systems(
         Update,
         (
@@ -30,8 +33,8 @@ impl Plugin for BoundsPlugin {
 }
 
 #[derive(Component)]
-struct Bounds {
-  half_size: Vec3,
+pub struct Bounds {
+  pub half_size: Vec3,
 }
 
 #[derive(Component)]
@@ -82,11 +85,12 @@ fn bounds_warp(bounds: Query<&Bounds>, mut query: Query<(&mut Transform, &mut Bo
   }
 }
 
-fn build_bounds_mesh(
+fn spawn_bounds(
   mut commands: Commands,
   //scene_assets: Res<SceneAssets>,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<CustomMaterial>>,
+  mut ev_bounds_writer: EventWriter<CameraBoundsChangeEvent>,
 ) {
   info!("creating bounds mesh");
   let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(
@@ -109,6 +113,7 @@ fn build_bounds_mesh(
     MeshMaterial3d(material_handle),
     Transform::from_translation(Vec3::Y * 5.0),
   ));
+  ev_bounds_writer.write(CameraBoundsChangeEvent);
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
