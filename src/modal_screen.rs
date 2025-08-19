@@ -7,11 +7,12 @@ use crate::{
   asset_loader::SceneAssets,
   game_manager::GameState,
   input::{InputEventAction, InputEventType, InputTriggerEvent},
-  movement::Rotation,
+  movement::Rotation, player::Player,
 };
 
 const FONT_SIZE_HUGE: f32 = 190.;
 const FONT_SIZE_MEDIUM: f32 = 60.;
+const FONT_SIZE_SMALL: f32 = 40.;
 
 pub struct ModalScreenPlugin;
 
@@ -80,6 +81,7 @@ fn show_game_over_screen(
   mut next_modal_state: ResMut<NextState<ModalState>>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
+  player:Single<&Player>,
 ) {
   next_modal_state.set(ModalState::Open);
   info!("show game over screen");
@@ -103,6 +105,16 @@ fn show_game_over_screen(
           ..default()
         },
       ));
+
+    parent.spawn((
+        Text::new(format!("Score: {}", player.score)),
+        TextFont {
+          font: scene_assets.font.clone(),
+          font_size: FONT_SIZE_SMALL,
+          ..default()
+        },
+      ));
+      ;
     });
 }
 

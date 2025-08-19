@@ -1,14 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds::BoundsWarp,
-  collision::Collider,
-  effect_sprite::EffectSpriteEvent,
-  game_manager::{GameEntity, GameState},
-  health::Health,
-  movement::{Rotation, Velocity},
-  scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -56,12 +49,19 @@ fn check_asteroid_health(
   query: Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
   mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
   scene_assets: Res<SceneAssets>,
+  mut ev_score_writer:EventWriter<ScoreEvent>,
 ) {
   let mut rng = rand::rng();
   for (roid, health, transform, velocity) in query.iter() {
     if health.value > 0. {
       continue;
     }
+
+    ev_score_writer.write(ScoreEvent::new(match roid.0 {
+        RoidSize::Large => 50,
+        RoidSize::Medium => 20,
+        RoidSize::Small => 10,
+    }));
 
     let scale = match roid.0 {
       RoidSize::Large => 16.,

@@ -29,12 +29,14 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app
+
+    .add_event::<ScoreEvent>()
       .add_systems(OnEnter(GameState::GameInit), create_player)
       .add_systems(OnEnter(GameState::Alive), create_ship)
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot)
+          (update_player_movement, update_player_action, player_shoot, update_score)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -52,8 +54,30 @@ pub struct PlayerShip {
 
 #[derive(Component, Default)]
 pub struct Player {
-  lives: u32,
-  score: u32,
+  pub lives: u32,
+  pub score: u32,
+}
+
+
+#[derive(Event)]
+pub struct ScoreEvent{
+  score:u32,
+}
+
+impl ScoreEvent{
+  pub fn new(score:u32)->Self{
+    Self{ score }
+  }
+}
+
+
+fn update_score(
+  mut player: Single<&mut Player>,
+  mut ev_score_reader:EventReader<ScoreEvent>
+){
+  for score_event in ev_score_reader.read(){
+    player.score += score_event.score;
+  }
 }
 
 fn check_player_health(

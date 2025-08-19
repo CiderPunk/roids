@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, game_manager::GameState};
+use crate::{asset_loader::SceneAssets, game_manager::GameState, player::Player};
 
 pub struct GameUiPlugin;
 
@@ -8,12 +8,19 @@ impl Plugin for GameUiPlugin{
   fn build(&self, app: &mut App) {
     app
       .add_systems(OnEnter(GameState::GameInit), init_game_ui)
-      .add_systems(OnEnter(GameState::GameOver), remove_game_ui);
+      .add_systems(OnEnter(GameState::GameOver), remove_game_ui)
+      .add_systems(Update, update_score);
   }
 }
 
 
-
+fn update_score(
+  player:Single<&Player>,
+  mut text:Single<&mut Text, With<ScoreDisplay>>,
+){
+  text.0 = format!("Score: {}", player.score);
+  
+}
 
 #[derive(Component)]
 struct ScoreDisplay;
@@ -55,7 +62,7 @@ fn init_game_ui(
       },
       TextColor::WHITE,
       Node{
-        margin: UiRect::all(Val::Px(5.)),
+        margin: UiRect::all(Val::Px(50.)),
         ..default()
       }
     ));
