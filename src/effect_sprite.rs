@@ -210,7 +210,6 @@ fn spawn_effect_sprites(
       continue;
     };
 
-    info!("spawning effect ");
     let transform = Transform::from_translation(sprite.translation)
       .with_scale(Vec3::splat(sprite.scale))
       //.with_rotation(Quat::from_euler(EulerRot::XZX, PI * -0.5, rng.random_range(-1. .. 1.) * PI, 0.));

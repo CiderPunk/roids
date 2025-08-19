@@ -55,7 +55,7 @@ fn fragment(
 
   const tgt = 0.0002;
   const threshold = 1.0 - tgt;
-  let point = hash12(mesh.uv * 2000. + fract(globals.time * 0.000001));
+  let point = hash12(mesh.uv * 2000.);
   if point > threshold{
     let intensity = (point - threshold) / tgt;
     return vec4(vec3(intensity),intensity);
@@ -63,5 +63,6 @@ fn fragment(
   else{
     return vec4(0.,0.,0.,1.);
   }
+
   //return vec4(point,point,point,1.);
 }

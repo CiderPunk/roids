@@ -11,8 +11,8 @@ use bevy::{
 };
 
 const BOUNDS_SHADER_PATH: &str = "shaders/bounds_material.wgsl";
-//const BOUNDS_SIZE: Vec3 = Vec3::new(115.0, 0., 65.0);
-const BOUNDS_SIZE: Vec3 = Vec3::new(150.0, 0., 150.0);
+const BOUNDS_SIZE: Vec3 = Vec3::new(115.0, 0., 65.0);
+//const BOUNDS_SIZE: Vec3 = Vec3::new(150.0, 0., 150.0);
 const BOUNDS_BORDER_SIZE: f32 = 20.;
 
 pub struct BoundsPlugin;
