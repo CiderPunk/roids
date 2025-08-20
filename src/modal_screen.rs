@@ -93,6 +93,7 @@ fn show_game_over_screen(
         height: Val::Percent(100.0),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
+        flex_direction: FlexDirection::Column,
         ..default()
       },
     ))
@@ -148,7 +149,7 @@ fn show_start_screen(
     Text::new("Press FIRE to start"),
     TextFont {
       font: scene_assets.font.clone(),
-      font_size: 20.,
+      font_size: FONT_SIZE_SMALL,
       ..default()
     },
     TextColor(Color::srgb(0.9, 0.9, 0.9)),

@@ -20,8 +20,9 @@ mod game_ui;
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
 };
+
 
 const APP_NAME: &str = "Roids";
 
@@ -96,10 +97,11 @@ fn _test_sphere(
 
 fn shutdown_detect(
   mut ev_windows_close_reader: EventReader<WindowCloseRequested>,
-  mut ev_game_state_writer: EventWriter<GameStateEvent>,
+  mut next_state:ResMut<NextState<GameState>>,
 ) {
   for _ in ev_windows_close_reader.read() {
     info!("shutting down");
-    ev_game_state_writer.write(GameStateEvent::new(GameState::Shutdown));
+    next_state.set(GameState::Shutdown);
+
   }
 }

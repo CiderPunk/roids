@@ -63,7 +63,6 @@ fn bullet_hit(
     let Ok(transform) = query.get(bullet) else {
       continue;
     };
-    info!("{:}", transform.translation());
     ev_effect_writer.write(EffectSpriteEvent::new(
       transform.translation(),
       4.,

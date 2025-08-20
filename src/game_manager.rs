@@ -34,15 +34,11 @@ impl Plugin for GameManagerPlugin {
     app
       .init_state::<GameState>()
       .init_state::<PauseState>()
-      .add_event::<GameStateEvent>()
+      //.add_event::<GameStateEvent>()
       .add_systems(OnEnter(AssetState::Ready), start_screen)
       .add_systems(OnEnter(GameState::GameInit), init_game)
       .add_systems(OnExit(GameState::GameOver), clean_game)
-      .add_systems(Update, update_game_state)
-      .add_systems(
-        Update,
-        check_for_pause.run_if(in_state(PauseState::Running)),
-      );
+      .add_systems(Update, check_for_pause.run_if(in_state(PauseState::Running)));
   }
 }
 
@@ -61,7 +57,7 @@ fn start_screen(mut next_state: ResMut<NextState<GameState>>) {
   info!("Switching to start screen");
   next_state.set(GameState::StartScreen);
 }
-
+/*
 #[derive(Event)]
 pub struct GameStateEvent {
   state: GameState,
@@ -82,7 +78,7 @@ fn update_game_state(
     next_state.set(state);
   }
 }
-
+ */
 fn check_for_pause(
   mut ev_input_reader: EventReader<InputTriggerEvent>,
   mut next_state: ResMut<NextState<PauseState>>,

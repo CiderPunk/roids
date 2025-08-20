@@ -22,7 +22,7 @@ const ROID_LARGE_SCALE: Vec3 = Vec3::splat(5.);
 const ROID_MEDIUM_SCALE: Vec3 = Vec3::splat(3.);
 const ROID_SMALL_SCALE: Vec3 = Vec3::splat(1.);
 
-const ROID_LARGE_RADIUS: f32 = 6.5;
+const ROID_LARGE_RADIUS: f32 = 7.;
 const ROID_MEDIUM_RADIUS: f32 = 4.;
 const ROID_SMALL_RADIUS: f32 = 1.5;
 
@@ -63,14 +63,14 @@ fn check_asteroid_health(
         RoidSize::Small => 10,
     }));
 
-    let scale = match roid.0 {
+    let effect_scale = match roid.0 {
       RoidSize::Large => 16.,
       RoidSize::Medium => 12.,
       RoidSize::Small => 8.,
     };
     ev_effect_writer.write(EffectSpriteEvent::new(
       transform.translation(),
-      scale,
+      effect_scale,
       velocity.0,
       crate::effect_sprite::EffectSpriteType::Splosion,
     ));
