@@ -21,6 +21,7 @@ pub struct SceneAssets {
   pub font: Handle<Font>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
+  pub ship_icon: Handle<Image>,
 }
 
 #[derive(Resource)]
@@ -50,6 +51,7 @@ fn load_assets(
   mut commands: Commands,
   asset_server: Res<AssetServer>,
   mut loading: ResMut<AssetsLoading>,
+  mut scene_assets: ResMut<SceneAssets>,
 ) {
   info!("Loading assets");
   let gltf = asset_server.load("scenes/roids.glb");
@@ -59,6 +61,10 @@ fn load_assets(
   let font = asset_server.load("fonts/OpenSans_Condensed-Bold.ttf");
   loading.0.push(font.clone().untyped());
   commands.insert_resource(GameFont(font));
+
+  let ship_icon = asset_server.load("ui/ship_icon.png");
+  loading.0.push(ship_icon.clone().untyped());
+  scene_assets.ship_icon = ship_icon;
 }
 
 fn check_load_state(
@@ -94,16 +100,16 @@ fn extract_assets(
     return;
   };
   info!("extracting assets");
-  *scene_assets = SceneAssets {
-    ship: gltf.named_scenes["Ship"].clone(),
-    roid1: gltf.named_scenes["Roid1"].clone(),
-    bullet: meshes.add(
-      Sphere::new(BULLET_SIZE)
-        .mesh()
-        .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 2 }),
-    ),
-    bullet_material: materials.add(BULLET_COLOUR),
-    font: game_font.0.clone(),
-  };
+  scene_assets.ship = gltf.named_scenes["Ship"].clone();
+  scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
+  scene_assets.ship = gltf.named_scenes["Ship"].clone();
+  scene_assets.bullet = meshes.add(
+    Sphere::new(BULLET_SIZE)
+      .mesh()
+      .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 2 }),
+  );
+  scene_assets.bullet_material = materials.add(BULLET_COLOUR);
+  scene_assets.font = game_font.0.clone();
+  
   next_state.set(AssetState::Ready);
 }

@@ -34,7 +34,7 @@ fn reset_camera(
 
 fn  follow_player(
   player_query:Query<&GlobalTransform, With<PlayerShip>>,
-  mut camera_single:Single<(&GameCamera, &mut Transform)>,
+  camera_single:Single<(&GameCamera, &mut Transform)>,
 ){
   let (game_camera, mut camera_transform) = camera_single.into_inner(); 
   for player_transform in player_query{
