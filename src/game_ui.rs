@@ -18,8 +18,7 @@ fn update_score(
   player:Single<&Player>,
   mut text:Single<&mut Text, With<ScoreDisplay>>,
 ){
-  text.0 = format!("Score: {}", player.score);
-  
+  text.0 = format!("{}", player.score);
 }
 
 #[derive(Component)]
@@ -46,6 +45,7 @@ fn init_game_ui(
   commands.spawn((
     GameUi,
     Node{
+              margin: UiRect::all(Val::Px(50.)),
       width: Val::Percent(100.),
       align_items: AlignItems::Center,
       ..default()
@@ -53,18 +53,25 @@ fn init_game_ui(
   ))
   .with_children(|parent|{
     parent.spawn((
-      ScoreDisplay,
-      Text::new("Score"),
+      Text::new("Score: "),
       TextFont {
         font: scene_assets.font.clone(),
         font_size: 34.,
         ..default()
       },
       TextColor::WHITE,
-      Node{
-        margin: UiRect::all(Val::Px(50.)),
+     
+    ));    
+    parent.spawn((
+      ScoreDisplay,
+      Text::new("0"),
+      TextFont {
+        font: scene_assets.font.clone(),
+        font_size: 34.,
         ..default()
-      }
+      },
+      TextColor::WHITE,
+    
     ));
   });
 

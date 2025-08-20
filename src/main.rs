@@ -15,12 +15,12 @@ mod player;
 mod roid;
 mod scheduling;
 mod starfield;
-mod gane_ui;
+mod game_ui;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, gane_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState, GameStateEvent}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, starfield::StarfieldPlugin
 };
 
 const APP_NAME: &str = "Roids";
