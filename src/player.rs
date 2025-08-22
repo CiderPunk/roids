@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 
 use crate::{
@@ -29,7 +31,7 @@ impl Plugin for PlayerPlugin {
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot, update_score)
+          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -75,7 +77,11 @@ impl LifeEvent{
 }
 
 
-
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct Invulnerable{
+  pub duration:Timer,
+}
 
 fn update_score(
   mut player: Single<&mut Player>,
@@ -105,6 +111,20 @@ fn check_player_health(
   }
 }
 
+fn update_invulnerable(
+  mut commands:Commands,
+  query:Query<(Entity, &mut Invulnerable)>,
+  time:Res<Time>,
+){
+  for (entity, mut invulnerable) in query{
+    invulnerable.duration.tick(time.delta());
+    if invulnerable.duration.just_finished(){
+      commands.entity(entity).remove::<Invulnerable>();
+    }
+  }
+  
+}
+
 fn create_player(query: Query<Entity, With<Player>>, mut commands: Commands) {
   //delete old player
   for entity in query {
@@ -126,10 +146,9 @@ fn create_ship(
 ) {
   player.lives -= 1;
   ev_lives_writer.write(LifeEvent::new(player.lives));
-
-  
   info!("Create ship");
   commands.spawn((
+    Invulnerable{ duration: Timer::from_seconds(2., TimerMode::Once) } ,
     GameEntity,
     PlayerShip { ..default() },
     SceneRoot(scene_assets.ship.clone()),
