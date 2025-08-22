@@ -1,15 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds::BoundsWarp,
-  bullet::ShootEvent,
-  collision::Collider,
-  game_manager::{GameEntity, GameState},
-  health::Health,
-  input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
-  movement::{Acceleration, Rotation, Velocity},
-  scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -31,6 +23,7 @@ impl Plugin for PlayerPlugin {
     app
 
     .add_event::<ScoreEvent>()
+    .add_event::<LifeEvent>()
       .add_systems(OnEnter(GameState::GameInit), create_player)
       .add_systems(OnEnter(GameState::Alive), create_ship)
       .add_systems(
@@ -70,6 +63,19 @@ impl ScoreEvent{
   }
 }
 
+#[derive(Event)]
+pub struct LifeEvent{
+  pub lives:u32,
+}
+
+impl LifeEvent{
+  pub fn new(lives:u32)->Self{
+    Self{ lives }
+  }
+}
+
+
+
 
 fn update_score(
   mut player: Single<&mut Player>,
@@ -81,12 +87,14 @@ fn update_score(
 }
 
 fn check_player_health(
-  query: Query<&Health, With<PlayerShip>>,
+  query: Query<(&Health, &Velocity, &GlobalTransform),With<PlayerShip>>,
   player: Single<&Player>,
   mut next_state: ResMut<NextState<GameState>>,
+  mut ev_effect_writer:EventWriter<EffectSpriteEvent>,
 ) {
-  for health in query {
+  for (health, velocity, transform) in query {
     if health.value <= 0. {
+      ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 16., velocity.0, EffectSpriteType::Splosion));
       info!("Player dead");
       if player.lives > 0 {
         next_state.set(GameState::Dead);
@@ -114,8 +122,12 @@ fn create_ship(
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
   mut player: Single<&mut Player>,
+  mut ev_lives_writer: EventWriter<LifeEvent>,
 ) {
   player.lives -= 1;
+  ev_lives_writer.write(LifeEvent::new(player.lives));
+
+  
   info!("Create ship");
   commands.spawn((
     GameEntity,

@@ -4,12 +4,13 @@ use crate::game_manager::PauseState;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameSchedule {
+  HealthAdjust,
   UserInput,
   EntityUpdates,
   CollisionDetection,
   DespawnEntities,
   PreDespawnEntities,
-  HealthAdjust,
+  PostEntityUpdates,
 }
 
 pub struct SchedulingPlugin;
@@ -25,6 +26,7 @@ impl Plugin for SchedulingPlugin {
           GameSchedule::DespawnEntities,
           GameSchedule::UserInput,
           GameSchedule::EntityUpdates,
+          GameSchedule::PostEntityUpdates,
         )
           .chain()
           .run_if(in_state(PauseState::Running)),
