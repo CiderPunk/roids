@@ -1,7 +1,4 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
-
 use crate::{
   asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule
 };
@@ -31,7 +28,7 @@ impl Plugin for PlayerPlugin {
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable)
+          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, add_shied)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -113,16 +110,23 @@ fn check_player_health(
 
 fn update_invulnerable(
   mut commands:Commands,
-  query:Query<(Entity, &mut Invulnerable)>,
+  query:Query<(Entity, &mut Invulnerable, &Children)>,
   time:Res<Time>,
 ){
-  for (entity, mut invulnerable) in query{
+  for (entity, mut invulnerable, children) in query{
     invulnerable.duration.tick(time.delta());
     if invulnerable.duration.just_finished(){
       commands.entity(entity).remove::<Invulnerable>();
+      for child in children.iter() {
+        //commands.entity(entity).remove_children(child);
+
+      }
+
+
+
+
     }
   }
-  
 }
 
 fn create_player(query: Query<Entity, With<Player>>, mut commands: Commands) {
@@ -187,6 +191,24 @@ fn create_ship(
     ));
   */
 }
+
+
+fn add_shied(
+  mut commands: Commands,
+  query: Query<Entity, Added<Invulnerable>>,
+  scene_assets: Res<SceneAssets>,
+) {
+  for entity in query.iter() {
+    commands.spawn((
+      Mesh3d(scene_assets.ship_shield.clone()),
+      MeshMaterial3d(scene_assets.shield_material.clone()),
+      ChildOf(entity),
+    ));
+  }
+}
+
+
+
 
 fn update_player_movement(
   //mut commands:Commands,

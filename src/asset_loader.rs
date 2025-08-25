@@ -1,7 +1,10 @@
-use bevy::{asset::LoadState, prelude::*};
+use bevy::{asset::LoadState, prelude::*, scene};
 
-const BULLET_COLOUR: Color = Color::srgb(2.0, 1.8, 0.2);
+
+const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
+const SHIELD_COLOUR: LinearRgba = LinearRgba::new(0.0, 0.2, 1.0, 0.2);
 const BULLET_SIZE: f32 = 0.5;
+const SHIELD_SIZE: f32 = 6.;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum AssetState {
@@ -21,6 +24,9 @@ pub struct SceneAssets {
   pub font: Handle<Font>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
+  
+  pub ship_shield: Handle<Mesh>,
+  pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
 }
 
@@ -108,8 +114,22 @@ fn extract_assets(
       .mesh()
       .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 2 }),
   );
-  scene_assets.bullet_material = materials.add(BULLET_COLOUR);
+  scene_assets.bullet_material = materials.add(StandardMaterial{
+
+    emissive: BULLET_COLOUR,
+    ..default()
+  });
   scene_assets.font = game_font.0.clone();
-  
+  scene_assets.ship_shield = meshes.add(
+    Sphere::new(SHIELD_SIZE)
+      .mesh()
+      .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 4 }),
+  );
+  scene_assets.shield_material = materials.add(StandardMaterial{
+    alpha_mode: AlphaMode::Blend,
+    emissive: SHIELD_COLOUR,
+    ..default()
+  });
+
   next_state.set(AssetState::Ready);
 }
