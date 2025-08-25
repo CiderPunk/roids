@@ -4,7 +4,7 @@ use bevy::{asset::LoadState, prelude::*, scene};
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
 const SHIELD_COLOUR: LinearRgba = LinearRgba::new(0.0, 0.2, 1.0, 0.2);
 const BULLET_SIZE: f32 = 0.5;
-const SHIELD_SIZE: f32 = 6.;
+const SHIELD_SIZE: f32 = 4.;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum AssetState {
@@ -127,7 +127,9 @@ fn extract_assets(
   );
   scene_assets.shield_material = materials.add(StandardMaterial{
     alpha_mode: AlphaMode::Blend,
-    emissive: SHIELD_COLOUR,
+    emissive: Srgba::new(0.,0.2,0.8,0.2).into(),
+    base_color: Srgba::new(0.,0.2,0.8,0.2).into(),
+    diffuse_transmission:0.8,
     ..default()
   });
 
