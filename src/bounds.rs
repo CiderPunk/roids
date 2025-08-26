@@ -1,5 +1,5 @@
 use crate::{
-  camera::CameraBoundsChangeEvent, game_manager::{GameEntity, GameState}, scheduling::GameSchedule
+  camera::CameraBoundsChangeEvent, game_manager::{GameEntity, GameState}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 use bevy::{
   asset::RenderAssetUsages,
@@ -89,7 +89,7 @@ fn spawn_bounds(
   mut commands: Commands,
   //scene_assets: Res<SceneAssets>,
   mut meshes: ResMut<Assets<Mesh>>,
-  mut materials: ResMut<Assets<CustomMaterial>>,
+  materials:Res<ShaderMaterials>,
   mut ev_bounds_writer: EventWriter<CameraBoundsChangeEvent>,
 ) {
   info!("creating bounds mesh");
@@ -98,11 +98,6 @@ fn spawn_bounds(
     BOUNDS_SIZE.z,
     BOUNDS_BORDER_SIZE,
   ));
-  let material_handle = materials.add(CustomMaterial {
-    color1: LinearRgba::rgb(0.8, 0.8, 0.),
-    color2: LinearRgba::rgb(0.8, 0., 0.),
-    alpha_mode: AlphaMode::AlphaToCoverage,
-  });
 
   commands.spawn((
     GameEntity,
@@ -110,7 +105,7 @@ fn spawn_bounds(
       half_size: BOUNDS_SIZE,
     },
     Mesh3d(mesh_handle),
-    MeshMaterial3d(material_handle),
+    MeshMaterial3d(materials.bounds.clone()),
     Transform::from_translation(Vec3::Y * 5.0),
   ));
   ev_bounds_writer.write(CameraBoundsChangeEvent);

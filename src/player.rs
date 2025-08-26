@@ -121,10 +121,6 @@ fn update_invulnerable(
         //commands.entity(entity).remove_children(child);
 
       }
-
-
-
-
     }
   }
 }

@@ -4,7 +4,7 @@ use bevy::{asset::LoadState, prelude::*, scene};
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
 const SHIELD_COLOUR: LinearRgba = LinearRgba::new(0.0, 0.2, 1.0, 0.2);
 const BULLET_SIZE: f32 = 0.5;
-const SHIELD_SIZE: f32 = 4.;
+const SHIELD_SIZE: f32 = 3.;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum AssetState {
