@@ -11,10 +11,12 @@ impl Plugin for ShadersPlugin{
       .init_resource::<ShaderMaterials>()
       .add_plugins(MaterialPlugin::<StarfieldMaterial>::default())
       .add_plugins(MaterialPlugin::<BoundaryMaterial>::default())
+      .add_plugins(MaterialPlugin::<ShieldMaterial>::default())
       .add_systems(PreStartup, init_materials);
   }
 }
 
+const SHIELD_SHADER_PATH: &str = "shaders/shield_material.wgsl";
 const STARFIELD_SHADER_PATH: &str = "shaders/starfield_material.wgsl";
 const BOUNDS_SHADER_PATH: &str = "shaders/bounds_material.wgsl";
 
@@ -22,12 +24,14 @@ const BOUNDS_SHADER_PATH: &str = "shaders/bounds_material.wgsl";
 pub struct ShaderMaterials{
   pub starfield:Handle<StarfieldMaterial>,
   pub bounds:Handle<BoundaryMaterial>,
+  pub shield:Handle<ShieldMaterial>,
 }
 
 fn init_materials(
   mut commands:Commands,
   mut starfield_materials: ResMut<Assets<StarfieldMaterial>>,
   mut bounds_materials: ResMut<Assets<BoundaryMaterial>>,
+  mut shield_materials: ResMut<Assets<ShieldMaterial>>,
 ){
   let shader_materials = ShaderMaterials{ 
     starfield:
@@ -40,6 +44,10 @@ fn init_materials(
         color2: LinearRgba::rgb(0.8, 0., 0.),
         alpha_mode: AlphaMode::AlphaToCoverage,
       }),
+      shield:
+      shield_materials.add(ShieldMaterial{
+        alpha_mode: AlphaMode::AlphaToCoverage,
+    }),
    };
 
    commands.insert_resource::<ShaderMaterials>(shader_materials);
@@ -79,3 +87,19 @@ impl Material for BoundaryMaterial {
     self.alpha_mode
   }
 }
+
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct ShieldMaterial {
+  alpha_mode: AlphaMode,
+}
+
+impl Material for ShieldMaterial {
+  fn fragment_shader() -> ShaderRef {
+    SHIELD_SHADER_PATH.into()
+  }
+  fn alpha_mode(&self) -> AlphaMode {
+    self.alpha_mode
+  }
+}
+

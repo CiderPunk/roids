@@ -4,7 +4,7 @@ use bevy::{asset::LoadState, prelude::*, scene};
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
 const SHIELD_COLOUR: LinearRgba = LinearRgba::new(0.0, 0.2, 1.0, 0.2);
 const BULLET_SIZE: f32 = 0.5;
-const SHIELD_SIZE: f32 = 3.;
+const SHIELD_SIZE: f32 = 30.;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum AssetState {
@@ -121,9 +121,13 @@ fn extract_assets(
   });
   scene_assets.font = game_font.0.clone();
   scene_assets.ship_shield = meshes.add(
+    Sphere::new(SHIELD_SIZE).mesh().uv(32, 18)
+/*
     Sphere::new(SHIELD_SIZE)
       .mesh()
-      .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 4 }),
+      .ico(4)
+      .unwrap()
+       */
   );
   scene_assets.shield_material = materials.add(StandardMaterial{
     alpha_mode: AlphaMode::Blend,

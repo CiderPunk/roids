@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -15,6 +15,7 @@ const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES: u32 = 3;
+const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 600.;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -156,8 +157,9 @@ fn create_ship(
   player.lives -= 1;
   ev_lives_writer.write(LifeEvent::new(player.lives));
   info!("Create ship");
-  commands.spawn((
-    Invulnerable{ duration: Timer::from_seconds(2., TimerMode::Once) } ,
+
+commands.spawn((
+    Invulnerable{ duration: Timer::from_seconds(PLAYER_SPAWN_INVINCIBLE_TIME, TimerMode::Once) } ,
     GameEntity,
     PlayerShip { ..default() },
     SceneRoot(scene_assets.ship.clone()),
@@ -201,12 +203,13 @@ fn add_shield(
   mut commands: Commands,
   query: Query<Entity, Added<Invulnerable>>,
   scene_assets: Res<SceneAssets>,
+  shaders: Res<ShaderMaterials>,
 ) {
   for entity in query.iter() {
     commands.spawn((
       Shield,
       Mesh3d(scene_assets.ship_shield.clone()),
-      MeshMaterial3d(scene_assets.shield_material.clone()),
+      MeshMaterial3d(shaders.shield.clone()),
       ChildOf(entity),
     ));
   }
