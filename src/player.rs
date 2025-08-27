@@ -28,7 +28,7 @@ impl Plugin for PlayerPlugin {
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, add_shied)
+          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, add_shield)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -80,6 +80,12 @@ pub struct Invulnerable{
   pub duration:Timer,
 }
 
+
+#[derive(Component)]
+struct Shield;
+
+
+
 fn update_score(
   mut player: Single<&mut Player>,
   mut ev_score_reader:EventReader<ScoreEvent>
@@ -111,6 +117,7 @@ fn check_player_health(
 fn update_invulnerable(
   mut commands:Commands,
   query:Query<(Entity, &mut Invulnerable, &Children)>,
+  shield_query:Query<Entity, With<Shield>>,
   time:Res<Time>,
 ){
   for (entity, mut invulnerable, children) in query{
@@ -118,8 +125,10 @@ fn update_invulnerable(
     if invulnerable.duration.just_finished(){
       commands.entity(entity).remove::<Invulnerable>();
       for child in children.iter() {
-        //commands.entity(entity).remove_children(child);
-
+        if let Ok(shield) = shield_query.get(child){
+          commands.entity(entity).remove_children(&[shield]);
+          commands.entity(shield).despawn();
+        }
       }
     }
   }
@@ -188,14 +197,14 @@ fn create_ship(
   */
 }
 
-
-fn add_shied(
+fn add_shield(
   mut commands: Commands,
   query: Query<Entity, Added<Invulnerable>>,
   scene_assets: Res<SceneAssets>,
 ) {
   for entity in query.iter() {
     commands.spawn((
+      Shield,
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(scene_assets.shield_material.clone()),
       ChildOf(entity),
