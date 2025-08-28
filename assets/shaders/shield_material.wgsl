@@ -40,6 +40,10 @@ fn fragment(
     mesh: VertexOutput,
 ) -> @location(0) vec4<f32> {
 
-  return vec4(vec3(noise(mesh.uv*32.)),1.);
-  
+  let p = mesh.uv;
+  let green = noise(p*14. + vec2(1.2,2.33) * globals.time);
+  let blue = noise(p*12. + vec2(-1.4,-1.12) * globals.time);
+
+return vec4(0., green, blue, (green + blue * 0.5));
+
 }

@@ -15,7 +15,7 @@ const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES: u32 = 3;
-const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 600.;
+const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 3.;
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -29,7 +29,7 @@ impl Plugin for PlayerPlugin {
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, add_shield)
+          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, create_shield, update_shield)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -83,7 +83,9 @@ pub struct Invulnerable{
 
 
 #[derive(Component)]
-struct Shield;
+struct Shield{
+  owner:Entity,
+}
 
 
 
@@ -117,18 +119,16 @@ fn check_player_health(
 
 fn update_invulnerable(
   mut commands:Commands,
-  query:Query<(Entity, &mut Invulnerable, &Children)>,
-  shield_query:Query<Entity, With<Shield>>,
+  query:Query<(Entity, &mut Invulnerable)>,
+  shield_query:Query<(Entity, &Shield)>,
   time:Res<Time>,
 ){
-  for (entity, mut invulnerable, children) in query{
+  for (entity, mut invulnerable) in query{
     invulnerable.duration.tick(time.delta());
     if invulnerable.duration.just_finished(){
-      commands.entity(entity).remove::<Invulnerable>();
-      for child in children.iter() {
-        if let Ok(shield) = shield_query.get(child){
-          commands.entity(entity).remove_children(&[shield]);
-          commands.entity(shield).despawn();
+      for (shield_entity, shield) in shield_query{
+        if shield.owner == entity{
+          commands.entity(shield_entity).despawn();
         }
       }
     }
@@ -199,7 +199,7 @@ commands.spawn((
   */
 }
 
-fn add_shield(
+fn create_shield(
   mut commands: Commands,
   query: Query<Entity, Added<Invulnerable>>,
   scene_assets: Res<SceneAssets>,
@@ -207,14 +207,23 @@ fn add_shield(
 ) {
   for entity in query.iter() {
     commands.spawn((
-      Shield,
+      Shield{ owner: entity },
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),
-      ChildOf(entity),
     ));
   }
 }
 
+fn update_shield(
+  shield_query:Query<(&Shield, &mut Transform)>,
+  owner_query:Query<&GlobalTransform>,
+){
+  for (shield, mut transform) in shield_query{
+    if let Ok(owner_transform) = owner_query.get(shield.owner){
+      transform.translation = owner_transform.translation();
+    }
+  }
+}
 
 
 
