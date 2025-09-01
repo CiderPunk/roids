@@ -41,8 +41,8 @@ fn fragment(
 ) -> @location(0) vec4<f32> {
 
   let p = mesh.uv;
-  let green = noise(p*14. + vec2(1.2,2.33) * globals.time);
-  let blue = noise(p*12. + vec2(-1.4,-1.12) * globals.time);
+  let green = noise(p*6. + vec2(1.2,2.33) * globals.time);
+  let blue = noise(p*5. + vec2(-1.4,-1.12) * globals.time);
 
 return vec4(0., green, blue, (green + blue * 0.5));
 
