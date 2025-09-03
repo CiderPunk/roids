@@ -29,7 +29,7 @@ impl Plugin for PlayerPlugin {
       .add_systems(
         Update,
         (
-          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, create_shield, update_shield)
+          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, create_shield, update_shield, animate_flame)
             .in_set(GameSchedule::EntityUpdates),
           check_player_health.in_set(GameSchedule::PreDespawnEntities),
         ),
@@ -87,6 +87,8 @@ struct Shield{
   owner:Entity,
 }
 
+#[derive(Component)]
+struct FlameMarker;
 
 
 fn update_score(
@@ -126,6 +128,8 @@ fn update_invulnerable(
   for (entity, mut invulnerable) in query{
     invulnerable.duration.tick(time.delta());
     if invulnerable.duration.just_finished(){
+
+      commands.entity(entity).remove::<Invulnerable>();
       for (shield_entity, shield) in shield_query{
         if shield.owner == entity{
           commands.entity(shield_entity).despawn();
@@ -181,6 +185,11 @@ commands.spawn((
       max: 10.,
       last_hurt_by: None,
     },
+  ))
+  .with_child((
+    FlameMarker,
+    SceneRoot(scene_assets.flame.clone()),
+    Visibility::Hidden,
   ));
 
   /*.with_child((
@@ -231,13 +240,33 @@ fn update_player_movement(
   //mut commands:Commands,
   mut ev_input_movement_event: EventReader<InputMovementEvent>,
   ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<PlayerShip>>,
+  mut flame_visibility: Single<&mut Visibility, With<FlameMarker>>,
 ) {
   let (transform, mut acceleration, mut rotation) = ship.into_inner();
+  let mut flame = flame_visibility.into_inner();
   for InputMovementEvent { direction } in ev_input_movement_event.read() {
     rotation.y = direction.x * PLAYER_ROTATION_SPEED;
     acceleration.acceleration = transform.forward() * ACCELERATION_MULTIPIER * direction.y.max(0.);
+    if direction.y > 0.{
+      *flame = Visibility::Visible;
+    }
+    else{
+      *flame = Visibility::Hidden;
+    }
   }
+
 }
+
+fn animate_flame(
+  flame: Single<&mut Transform, With<FlameMarker>>,
+  time:Res<Time>,
+){
+  let mut transform = flame.into_inner();
+  transform.scale = Vec3::splat(0.5 + (time.elapsed_secs() * 20.).sin().abs() * 0.5);
+
+
+}
+
 
 fn update_player_action(
   mut ev_input_trigger_event: EventReader<InputTriggerEvent>,

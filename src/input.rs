@@ -116,6 +116,7 @@ fn read_gamepads(
   gamepads: Query<&Gamepad>,
   mut ev_movement_event: EventWriter<InputMovementEvent>,
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
+  mut last_dir: Local<Vec2>,
 ) {
   for gamepad in &gamepads {
     if gamepad.just_pressed(GamepadButton::East) {
@@ -140,10 +141,29 @@ fn read_gamepads(
         InputEventType::Released,
       ));
     }
-    let left_stick_x = gamepad.get(GamepadAxis::LeftStickX).unwrap();
-    let left_stick_y = gamepad.get(GamepadAxis::LeftStickY).unwrap();
-    let dir: Vec2 = Vec2::new(-left_stick_x, left_stick_y);
-    if dir.length_squared() > 0.1 {
+    let left_stick_x = (-1. * gamepad.get(GamepadAxis::LeftStickX).unwrap()).min(1.).max(-1.);
+    let left_stick_y = gamepad.get(GamepadAxis::LeftStickY).unwrap().min(1.).max(-1.);
+
+    let mut dir: Vec2 = Vec2::new(-left_stick_x, left_stick_y);
+
+    if gamepad.pressed(GamepadButton::DPadLeft){
+      dir.x = -1.;
+    }
+    if gamepad.pressed(GamepadButton::DPadRight){
+      dir.x = 1.;
+    }
+    if gamepad.pressed(GamepadButton::DPadUp){
+      dir.y = 1.;
+    }
+    if gamepad.pressed(GamepadButton::DPadDown){
+      dir.y = -1.;
+    }
+
+
+
+    
+    if *last_dir != dir || dir.length_squared() > 0.1 {
+      *last_dir = dir;
       ev_movement_event.write(InputMovementEvent::new(dir));
     }
   }
@@ -154,6 +174,7 @@ fn read_touch(
   mut ev_movement_event: EventWriter<InputMovementEvent>,
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
   mut touch_tracker: ResMut<TouchResource>,
+
 ) {
   for touch in touches.iter_just_pressed() {
     //fisrt touch down is our move finger
@@ -163,6 +184,7 @@ fn read_touch(
       touch_tracker.last = touch.position();
     } else {
       //second is our shoot action
+      
       ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
