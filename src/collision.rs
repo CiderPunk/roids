@@ -11,7 +11,7 @@ impl Plugin for CollisionPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(
       PostUpdate,
-      (detect_bullet_collisions, detect_collisions).in_set(GameSchedule::CollisionDetection),
+      (detect_bullet_collisions, detect_player_collisions).in_set(GameSchedule::CollisionDetection),
     )
     //.add_systems(Update, _add_collision_shell)
     ;
@@ -44,7 +44,37 @@ fn _add_collision_shell(
   }
 }
 
-fn detect_collisions(
+
+
+fn detect_physics_collisions(
+  player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip>, Without<Invulnerable>)>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
+  mut ev_health_writer: EventWriter<HealthEvent>,
+) {
+  for (player_entity, player_collider, player_transform) in player.iter() {
+    for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
+      let dist_squared = player_transform
+        .translation()
+        .distance_squared(enemy_transform.translation());
+      let allowded_dist = player_collider.radius + enemy_collider.radius;
+      if dist_squared < allowded_dist * allowded_dist {
+        info!("ent collision {:?} {:?}", player_entity, enemy_entity);
+        ev_health_writer.write(HealthEvent::new(
+          player_entity,
+          Some(enemy_entity),
+          enemy_collider.damage,
+        ));
+        ev_health_writer.write(HealthEvent::new(
+          enemy_entity,
+          Some(player_entity),
+          player_collider.damage,
+        ));
+      }
+    }
+  }
+}
+
+fn detect_player_collisions(
   player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip>, Without<Invulnerable>)>,
   baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
   mut ev_health_writer: EventWriter<HealthEvent>,
