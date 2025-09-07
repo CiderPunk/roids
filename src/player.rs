@@ -16,7 +16,7 @@ const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES: u32 = 3;
-const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 30.;
+const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 3.;
 const PLAYER_SHIELD_SIZE: f32 = 3.5;
 const PLAYER_SHIELD_REPULSE_FORCE: f32 = 300.;
 
@@ -248,7 +248,7 @@ fn update_player_movement(
   //mut commands:Commands,
   mut ev_input_movement_event: EventReader<InputMovementEvent>,
   ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<PlayerShip>>,
-  mut flame_visibility: Single<&mut Visibility, With<FlameMarker>>,
+  flame_visibility: Single<&mut Visibility, With<FlameMarker>>,
 ) {
   let (transform, mut acceleration, mut rotation) = ship.into_inner();
   let mut flame = flame_visibility.into_inner();

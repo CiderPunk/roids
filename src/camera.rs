@@ -1,4 +1,4 @@
-use bevy::{math::{bounding::Aabb2d, VectorSpace}, prelude::*, window::{WindowResized, WindowResolution}};
+use bevy::{math::bounding::Aabb2d, prelude::*, window::WindowResized};
 
 use crate::{bounds::Bounds, game_manager::GameState, player::PlayerShip, scheduling::GameSchedule};
 

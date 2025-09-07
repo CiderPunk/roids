@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies.bevy]
 version="0.16.1"
-features=[
-  "file_watcher",
-  "embedded_watcher",
+
+
+[features]
+watcher = [
+  "bevy/file_watcher",
+  "bevy/embedded_watcher",
 ]
 
 # Enable a small amount of optimization in the dev profile.
@@ -23,5 +26,11 @@ opt-level = 3
 linker = "rust-lld.exe"
 
 [dependencies]
-bevy_spritesheet_animation = "3.0.0"
 rand = "0.9.2"
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
+
+
+[alias]
+r = "run --features watcher"

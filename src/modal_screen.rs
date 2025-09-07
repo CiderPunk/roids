@@ -115,7 +115,6 @@ fn show_game_over_screen(
           ..default()
         },
       ));
-      ;
     });
 }
 
