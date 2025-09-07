@@ -1,12 +1,13 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
 const PLAYER_ROTATION_SPEED: f32 = -5.0;
 const ACCELERATION_MULTIPIER: f32 = 60.0;
-const PLAYER_DAMPING: f32 = 3.;
+const PLAYER_DAMPING: f32 = 0.02;
+const PLAYER_MIN_SPEED: f32 = 0.2;
 const PLAYER_MAX_SPEED: f32 = 30.;
 const PLAYER_SHOOT_DELAY: f32 = 0.2;
 const PLAYER_BULLET_FORWARD_OFFSET: f32 = 2.5;
@@ -16,6 +17,7 @@ const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES: u32 = 3;
 const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 3.;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -24,16 +26,16 @@ impl Plugin for PlayerPlugin {
 
     .add_event::<ScoreEvent>()
     .add_event::<LifeEvent>()
-      .add_systems(OnEnter(GameState::GameInit), create_player)
-      .add_systems(OnEnter(GameState::Alive), create_ship)
-      .add_systems(
-        Update,
-        (
-          (update_player_movement, update_player_action, player_shoot, update_score, update_invulnerable, create_shield, update_shield, animate_flame)
-            .in_set(GameSchedule::EntityUpdates),
-          check_player_health.in_set(GameSchedule::PreDespawnEntities),
-        ),
-      );
+    .add_systems(OnEnter(GameState::GameInit), create_player)
+    .add_systems(OnEnter(GameState::Alive), create_ship)
+    .add_systems(
+      Update,
+      (
+        (update_player_movement, update_player_action, player_shoot).in_set(GameSchedule::ActionUserInput),
+        (update_score, update_invulnerable, create_shield, update_shield, animate_flame).in_set(GameSchedule::EntityUpdates),
+        check_player_health.in_set(GameSchedule::PreDespawnEntities),
+      ),
+    );
   }
 }
 
@@ -50,7 +52,6 @@ pub struct Player {
   pub lives: u32,
   pub score: u32,
 }
-
 
 #[derive(Event)]
 pub struct ScoreEvent{
@@ -172,8 +173,10 @@ commands.spawn((
     Acceleration {
       acceleration: Vec3::ZERO,
       max_speed: PLAYER_MAX_SPEED,
-      damping: PLAYER_DAMPING,
-      min_speed: 2.0,
+    },
+    Damping{
+        amount: PLAYER_DAMPING,
+        min_speed: PLAYER_MIN_SPEED,
     },
     BoundsWarp(true),
     Collider {

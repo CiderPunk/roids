@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::scheduling::GameSchedule;
+
 #[derive(PartialEq)]
 pub enum InputEventType {
   Pressed,
@@ -66,7 +68,7 @@ impl Plugin for GameInputPlugin {
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
       .add_systems(Startup, init_input_resources)
-      .add_systems(Update, (read_keys, read_touch, read_gamepads).chain());
+      .add_systems(Update, (read_keys, read_touch, read_gamepads).in_set(GameSchedule::ReadUserInput));
   }
 }
 

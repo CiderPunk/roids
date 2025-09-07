@@ -1,10 +1,11 @@
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
+
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash, Default)]
 enum RoidSize {
@@ -14,9 +15,13 @@ enum RoidSize {
   Small,
 }
 
+
+const ROID_COUNT: i32 = 15;
 const ROID_SPAWN_DISTANCE: f32 = 150.0;
 const ROID_LOW_SPEED: f32 = 4.;
 const ROID_HIGH_SPEED: f32 = 20.;
+
+const ROID_MAX_SPEED: f32 = 30.;
 
 const ROID_LARGE_SCALE: Vec3 = Vec3::splat(5.);
 const ROID_MEDIUM_SCALE: Vec3 = Vec3::splat(3.);
@@ -25,6 +30,11 @@ const ROID_SMALL_SCALE: Vec3 = Vec3::splat(1.);
 const ROID_LARGE_RADIUS: f32 = 7.;
 const ROID_MEDIUM_RADIUS: f32 = 4.;
 const ROID_SMALL_RADIUS: f32 = 1.5;
+
+
+const ROID_LARGE_MASS: f32 = 20.;
+const ROID_MEDIUM_MASS: f32 = 10.;
+const ROID_SMALL_MASS: f32 = 5.;
 
 const ROID_COLLISION_DAMAGE: f32 = -100.;
 
@@ -82,21 +92,25 @@ fn check_asteroid_health(
     let scale: Vec3;
     let collider_radius: f32;
     let next_size: RoidSize;
+    let mass:f32;
     match roid.0 {
       RoidSize::Large => {
         scale = ROID_MEDIUM_SCALE;
         collider_radius = ROID_MEDIUM_RADIUS;
         next_size = RoidSize::Medium;
+        mass = ROID_MEDIUM_MASS;
       }
       RoidSize::Medium => {
         scale = ROID_SMALL_SCALE;
         collider_radius = ROID_SMALL_RADIUS;
         next_size = RoidSize::Small;
+        mass = ROID_SMALL_MASS;
       }
       RoidSize::Small => {
         scale = ROID_SMALL_SCALE;
         collider_radius = ROID_SMALL_RADIUS;
         next_size = RoidSize::Small;
+        mass = ROID_SMALL_MASS;
       }
     }
 
@@ -107,7 +121,9 @@ fn check_asteroid_health(
         rng.random_range(-1. ..1.),
       );
 
-      commands.spawn((
+    
+
+    commands.spawn((
         GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(true),
@@ -131,6 +147,8 @@ fn check_asteroid_health(
         },
         Roid(next_size.clone()),
         Rotation(rotation),
+        PhysicsObject::new(mass),
+        Acceleration{ acceleration: Vec3::ZERO, max_speed: ROID_MAX_SPEED }
       ));
     }
   }
@@ -138,7 +156,8 @@ fn check_asteroid_health(
 
 fn spawn_roids(mut commands: Commands, scene_assets: Res<SceneAssets>) {
   let mut rng = rand::rng();
-  for _ in 0..15 {
+
+  for _ in 0..ROID_COUNT {
     let angle = rng.random_range(0. ..PI * 2.);
     let return_angle = angle + rng.random_range(-0.3..0.3);
 
@@ -170,6 +189,8 @@ fn spawn_roids(mut commands: Commands, scene_assets: Res<SceneAssets>) {
         max: 10.,
         last_hurt_by: None,
       },
+      PhysicsObject::new(ROID_LARGE_MASS),
+      Acceleration{ acceleration: Vec3::ZERO, max_speed: ROID_MAX_SPEED}
     ));
   }
 }

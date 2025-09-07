@@ -1,22 +1,22 @@
 use bevy::prelude::*;
 
 use crate::{
-  bullet::{Bullet, BulletHitEvent},
-  health::HealthEvent,
-  player::{Invulnerable, PlayerShip},
-  scheduling::GameSchedule,
+  bullet::{Bullet, BulletHitEvent}, health::HealthEvent, movement::{PhysicsEvent, PhysicsObject}, player::{Invulnerable, PlayerShip}, scheduling::GameSchedule
 };
 pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(
       PostUpdate,
-      (detect_bullet_collisions, detect_player_collisions).in_set(GameSchedule::CollisionDetection),
+      (detect_bullet_collisions, detect_player_collisions, shield_collisions).in_set(GameSchedule::CollisionDetection),
     )
     //.add_systems(Update, _add_collision_shell)
     ;
   }
 }
+
+
+
 
 #[derive(Component, Default)]
 pub struct Collider {
@@ -44,31 +44,23 @@ fn _add_collision_shell(
   }
 }
 
-
-
-fn detect_physics_collisions(
-  player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip>, Without<Invulnerable>)>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
-  mut ev_health_writer: EventWriter<HealthEvent>,
+fn shield_collisions(
+  player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip> ,With<Invulnerable>)>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform),(With<PhysicsObject>, Without<PlayerShip>)>,
+  mut ev_physics_writer: EventWriter<PhysicsEvent>,
 ) {
   for (player_entity, player_collider, player_transform) in player.iter() {
     for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
       let dist_squared = player_transform
         .translation()
         .distance_squared(enemy_transform.translation());
-      let allowded_dist = player_collider.radius + enemy_collider.radius;
-      if dist_squared < allowded_dist * allowded_dist {
+      let allowed_dist = player_collider.radius + enemy_collider.radius;
+      if dist_squared < allowed_dist * allowed_dist {
         info!("ent collision {:?} {:?}", player_entity, enemy_entity);
-        ev_health_writer.write(HealthEvent::new(
-          player_entity,
-          Some(enemy_entity),
-          enemy_collider.damage,
-        ));
-        ev_health_writer.write(HealthEvent::new(
-          enemy_entity,
-          Some(player_entity),
-          player_collider.damage,
-        ));
+
+        let launch_vector = (enemy_transform.translation() - player_transform.translation()).normalize();
+
+        ev_physics_writer.write(PhysicsEvent::new(enemy_entity, launch_vector * 100. ));
       }
     }
   }
