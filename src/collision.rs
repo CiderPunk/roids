@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  bullet::{Bullet, BulletHitEvent}, health::HealthEvent, movement::{PhysicsEvent, PhysicsObject}, player::{Invulnerable, PlayerShip}, scheduling::GameSchedule
+  bullet::{Bullet, BulletHitEvent}, health::HealthEvent, movement::{PhysicsEvent, PhysicsObject}, player::{Invulnerable, PlayerShip, Shield}, scheduling::GameSchedule
 };
 pub struct CollisionPlugin;
 impl Plugin for CollisionPlugin {
@@ -45,11 +45,11 @@ fn _add_collision_shell(
 }
 
 fn shield_collisions(
-  player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip> ,With<Invulnerable>)>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform),(With<PhysicsObject>, Without<PlayerShip>)>,
+  player: Query<(Entity, &Collider, &GlobalTransform, &Shield)>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform),(With<PhysicsObject>, Without<PlayerShip>, Without<Shield>)>,
   mut ev_physics_writer: EventWriter<PhysicsEvent>,
 ) {
-  for (player_entity, player_collider, player_transform) in player.iter() {
+  for (player_entity, player_collider, player_transform, shield) in player.iter() {
     for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
       let dist_squared = player_transform
         .translation()
@@ -57,10 +57,8 @@ fn shield_collisions(
       let allowed_dist = player_collider.radius + enemy_collider.radius;
       if dist_squared < allowed_dist * allowed_dist {
         info!("ent collision {:?} {:?}", player_entity, enemy_entity);
-
         let launch_vector = (enemy_transform.translation() - player_transform.translation()).normalize();
-
-        ev_physics_writer.write(PhysicsEvent::new(enemy_entity, launch_vector * 100. ));
+        ev_physics_writer.write(PhysicsEvent::new(enemy_entity, launch_vector * shield.repulse_force ));
       }
     }
   }
@@ -97,7 +95,7 @@ fn detect_player_collisions(
 fn detect_bullet_collisions(
   bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
   players: Query<(Entity, &Collider, &GlobalTransform), With<PlayerShip>>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
+  baddies: Query<(Entity, &Collider, &GlobalTransform), (Without<PlayerShip>, Without<Shield>)>,
   mut ev_health_writer: EventWriter<HealthEvent>,
   mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
 ) {

@@ -21,7 +21,7 @@ const ROID_SPAWN_DISTANCE: f32 = 150.0;
 const ROID_LOW_SPEED: f32 = 4.;
 const ROID_HIGH_SPEED: f32 = 20.;
 
-const ROID_MAX_SPEED: f32 = 30.;
+const ROID_MAX_SPEED: f32 = 26.;
 
 const ROID_LARGE_SCALE: Vec3 = Vec3::splat(5.);
 const ROID_MEDIUM_SCALE: Vec3 = Vec3::splat(3.);

@@ -16,7 +16,9 @@ const PLAYER_BULLET_DAMAGE: f32 = -10.;
 const PLAYER_BULLET_SCALE: f32 = 0.5;
 const PLAYER_COLLLISION_RADIUS: f32 = 1.3;
 const PLAYER_START_LIVES: u32 = 3;
-const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 3.;
+const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 30.;
+const PLAYER_SHIELD_SIZE: f32 = 3.5;
+const PLAYER_SHIELD_REPULSE_FORCE: f32 = 300.;
 
 pub struct PlayerPlugin;
 
@@ -84,8 +86,9 @@ pub struct Invulnerable{
 
 
 #[derive(Component)]
-struct Shield{
+pub struct Shield{
   owner:Entity,
+  pub repulse_force:f32,
 }
 
 #[derive(Component)]
@@ -219,9 +222,11 @@ fn create_shield(
 ) {
   for entity in query.iter() {
     commands.spawn((
-      Shield{ owner: entity },
+      Shield{ owner: entity, repulse_force: PLAYER_SHIELD_REPULSE_FORCE},
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),
+      Transform::from_scale(Vec3::splat(PLAYER_SHIELD_SIZE)),
+      Collider{ radius: PLAYER_SHIELD_SIZE, damage: 0. },
     ));
   }
 }
