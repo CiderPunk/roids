@@ -6,3 +6,5 @@ rustflags = ['--cfg=getrandom_backend="wasm_js"']
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
 
+[alias]
+rw = "run --features watcher"

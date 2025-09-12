@@ -33,8 +33,7 @@ linker = "rust-lld.exe"
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
 
-[alias]
-r = "run --features watcher"
+
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 uuid = { version = "1.18.1", default-features = false, features = ["js"] }
