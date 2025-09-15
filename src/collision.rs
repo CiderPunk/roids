@@ -56,7 +56,7 @@ fn shield_collisions(
         .distance_squared(enemy_transform.translation());
       let allowed_dist = player_collider.radius + enemy_collider.radius;
       if dist_squared < allowed_dist * allowed_dist {
-        info!("ent collision {:?} {:?}", player_entity, enemy_entity);
+        //info!("ent collision {:?} {:?}", player_entity, enemy_entity);
         let launch_vector = (enemy_transform.translation() - player_transform.translation()).normalize();
         ev_physics_writer.write(PhysicsEvent::new(enemy_entity, launch_vector * shield.repulse_force ));
       }
@@ -76,7 +76,7 @@ fn detect_player_collisions(
         .distance_squared(enemy_transform.translation());
       let allowded_dist = player_collider.radius + enemy_collider.radius;
       if dist_squared < allowded_dist * allowded_dist {
-        info!("ent collision {:?} {:?}", player_entity, enemy_entity);
+        //info!("ent collision {:?} {:?}", player_entity, enemy_entity);
         ev_health_writer.write(HealthEvent::new(
           player_entity,
           Some(enemy_entity),
@@ -106,7 +106,7 @@ fn detect_bullet_collisions(
           .translation()
           .distance_squared(target_transform.translation());
         if dist_squared < collider.radius * collider.radius {
-          info!("bullet hit ent {:?}", target_entity);
+          //info!("bullet hit ent {:?}", target_entity);
           ev_health_writer.write(HealthEvent::new(target_entity, bullet.owner, bullet.damage));
           ev_bullet_hit_writer.write(BulletHitEvent::new(bullet_entity));
         }
@@ -117,7 +117,7 @@ fn detect_bullet_collisions(
           .translation()
           .distance_squared(target_transform.translation());
         if dist_squared < collider.radius * collider.radius {
-          info!("bullet hit player {:?}", target_entity);
+          //info!("bullet hit player {:?}", target_entity);
           ev_health_writer.write(HealthEvent::new(target_entity, bullet.owner, bullet.damage));
           ev_bullet_hit_writer.write(BulletHitEvent::new(bullet_entity));
         }

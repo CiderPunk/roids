@@ -92,6 +92,7 @@ fn check_game_state(
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
   roid_query:Query<&BoundsWarp, With<Roid>>,
+  mut next_state: ResMut<NextState<GameState>>,
 ){
   game_manager.level_time.tick(time.delta());
 if game_manager.level_time.elapsed_secs() < LEVEL_START_TIME { return; }
@@ -105,7 +106,9 @@ if game_manager.level_time.elapsed_secs() < LEVEL_START_TIME { return; }
     if bounds.0 { 
       return; }
   }
-  info!("LEVEL END");
+    info!("LEVEL END");
+  next_state.set(GameState::LevelEnd);
+
 }
 
 fn check_for_pause(
