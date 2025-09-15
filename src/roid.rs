@@ -16,7 +16,7 @@ enum RoidSize {
 }
 
 
-const ROID_COUNT: i32 = 15;
+const ROID_COUNT: i32 = 4;
 const ROID_SPAWN_DISTANCE: f32 = 150.0;
 const ROID_LOW_SPEED: f32 = 4.;
 const ROID_HIGH_SPEED: f32 = 20.;
@@ -51,18 +51,18 @@ impl Plugin for RoidPlugin {
   }
 }
 
-#[derive(Component, Default, Deref, DerefMut)]
-struct Roid(RoidSize);
+#[derive(Component, Default)]
+pub struct Roid(RoidSize);
 
 fn check_asteroid_health(
   mut commands: Commands,
-  query: Query<(&Roid, &Health, &GlobalTransform, &Velocity)>,
+  query: Query<(&Roid, &Health, &GlobalTransform, &Velocity, &BoundsWarp)>,
   mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
   scene_assets: Res<SceneAssets>,
   mut ev_score_writer:EventWriter<ScoreEvent>,
 ) {
   let mut rng = rand::rng();
-  for (roid, health, transform, velocity) in query.iter() {
+  for (roid, health, transform, velocity, orig_bounds_warp) in query.iter() {
     if health.value > 0. {
       continue;
     }
@@ -126,7 +126,7 @@ fn check_asteroid_health(
     commands.spawn((
         GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
-        BoundsWarp(true),
+        BoundsWarp(orig_bounds_warp.0),
         Transform::from_translation(transform.translation()).with_scale(scale),
         Velocity(
           velocity.0

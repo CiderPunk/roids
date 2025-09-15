@@ -1,15 +1,19 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState,
-  input::{InputEventAction, InputEventType, InputTriggerEvent},
+  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerEvent}, roid::Roid, scheduling::GameSchedule
 };
+
+
+//time before which it is not possible to complete a level - give roids time to get on screen
+const LEVEL_START_TIME: f32 = 5.0;
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum GameState {
   #[default]
   Startup,
   StartScreen,
+  LevelEnd,
   GameInit,
   Alive,
   Dead,
@@ -24,6 +28,20 @@ pub enum PauseState {
   Running,
 }
 
+
+#[derive(Component)]
+pub struct LevelConfiguration{
+  wave_size:u32,
+  wave_count:u32,
+  wave_timer:Timer,
+  max_speed:f32,
+  pseed_variance:f32,
+
+
+}
+
+
+
 #[derive(Component)]
 pub struct GameEntity;
 
@@ -34,11 +52,15 @@ impl Plugin for GameManagerPlugin {
     app
       .init_state::<GameState>()
       .init_state::<PauseState>()
-      //.add_event::<GameStateEvent>()
+      .insert_resource(GameManager{ level_time: Stopwatch::new(), level_comnplete_test_timer: Timer::from_seconds(0.5, TimerMode::Repeating) })
       .add_systems(OnEnter(AssetState::Ready), start_screen)
       .add_systems(OnEnter(GameState::GameInit), init_game)
       .add_systems(OnExit(GameState::GameOver), clean_game)
-      .add_systems(Update, check_for_pause.run_if(in_state(PauseState::Running)));
+      .add_systems(Update, check_for_pause.run_if(in_state(PauseState::Running)))
+      .add_systems(Update,check_game_state.in_set(GameSchedule::EntityUpdates)
+        .run_if(in_state(GameState::Alive))
+        .run_if(in_state(PauseState::Running))
+      );
   }
 }
 
@@ -57,28 +79,35 @@ fn start_screen(mut next_state: ResMut<NextState<GameState>>) {
   info!("Switching to start screen");
   next_state.set(GameState::StartScreen);
 }
-/*
-#[derive(Event)]
-pub struct GameStateEvent {
-  state: GameState,
+
+
+#[derive(Resource)]
+struct GameManager{
+  level_time:Stopwatch,
+  level_comnplete_test_timer:Timer,
 }
 
-impl GameStateEvent {
-  pub fn new(state: GameState) -> Self {
-    Self { state }
+
+fn check_game_state(
+  mut game_manager:ResMut<GameManager>,
+  time:Res<Time>,
+  roid_query:Query<&BoundsWarp, With<Roid>>,
+){
+  game_manager.level_time.tick(time.delta());
+if game_manager.level_time.elapsed_secs() < LEVEL_START_TIME { return; }
+
+  game_manager.level_comnplete_test_timer.tick(time.delta());
+  
+  if !game_manager.level_comnplete_test_timer.just_finished(){ return; }
+
+
+  for bounds in roid_query.iter(){
+    if bounds.0 { 
+      return; }
   }
+  info!("LEVEL END");
 }
 
-fn update_game_state(
-  mut ev_game_state: EventReader<GameStateEvent>,
-  mut next_state: ResMut<NextState<GameState>>,
-) {
-  for &GameStateEvent { state } in ev_game_state.read() {
-    info!("Switching game state {:?}", state);
-    next_state.set(state);
-  }
-}
- */
 fn check_for_pause(
   mut ev_input_reader: EventReader<InputTriggerEvent>,
   mut next_state: ResMut<NextState<PauseState>>,

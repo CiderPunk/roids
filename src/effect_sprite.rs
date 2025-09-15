@@ -35,10 +35,18 @@ struct EffectSpriteDef {
 }
 
 //Our effect sprite params
-const EFFECTS: [EffectSpriteDef; 2] = [
+const EFFECTS: [EffectSpriteDef; 3] = [
   EffectSpriteDef {
     effect_type: EffectSpriteType::Splosion,
     texture_path: "sprites/splosion.png",
+    frame_count: 17,
+    horizontal_frames: 4,
+    vertical_frames: 4,
+    frame_rate: 15.,
+  },  
+  EffectSpriteDef {
+    effect_type: EffectSpriteType::Splosion,
+    texture_path: "sprites/splosion2.png",
     frame_count: 17,
     horizontal_frames: 4,
     vertical_frames: 4,
@@ -55,7 +63,7 @@ const EFFECTS: [EffectSpriteDef; 2] = [
 ];
 
 struct Effect {
-  material: Handle<EffectSpriteMaterial>,
+  materials: Vec<Handle<EffectSpriteMaterial>>,
   animation_time: f32,
   //init_time:f32,
 }
@@ -161,14 +169,14 @@ fn init_effect_sprite(
         frames_wide: effect.horizontal_frames as f32,
       },
     });
-    effect_collection.0.insert(
-      effect.effect_type,
+
+    let effect = effect_collection.0.entry(effect.effect_type).or_insert(
       Effect {
-        material,
+        materials: Vec::new(),
         animation_time: (effect.frame_count + 1) as f32 / effect.frame_rate,
-        //init_time,
-      },
-    );
+      });
+    effect.materials.push(material);  
+    
   }
 }
 
@@ -215,13 +223,16 @@ fn spawn_effect_sprites(
       //.with_rotation(Quat::from_euler(EulerRot::XZX, PI * -0.5, rng.random_range(-1. .. 1.) * PI, 0.));
       .with_rotation(Quat::from_rotation_y(rng.random_range(-1. ..1.) * PI));
     let offset: f32 = time.elapsed_secs_wrapped();
+
+
+    let material_id = rng.random_range(0 .. effect.materials.len());
     commands.spawn((
       GameEntity,
       EffectSprite {
         timer: Timer::from_seconds(effect.animation_time, TimerMode::Once),
       },
       Mesh3d(mesh.0.clone()),
-      MeshMaterial3d(effect.material.clone()),
+      MeshMaterial3d(effect.materials[material_id].clone()),
       Velocity(sprite.velocity),
       transform,
       MeshTag(offset.to_bits()),
