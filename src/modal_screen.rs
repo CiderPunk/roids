@@ -23,6 +23,7 @@ impl Plugin for ModalScreenPlugin {
       .add_systems(OnEnter(GameState::GameOver), show_game_over_screen)
       .add_systems(OnEnter(GameState::Dead), show_dead_screen)
       .add_systems(OnEnter(GameState::StartScreen), show_start_screen)
+      .add_systems(OnEnter(GameState::LevelEnd), show_level_end_screen)
       .add_systems(OnExit(ModalState::Open), remove_modal_screen)
       .add_systems(
         Update,
@@ -40,6 +41,38 @@ pub enum ModalState {
 
 #[derive(Component)]
 struct ModalScreenElement;
+
+
+fn show_level_end_screen(
+  mut next_modal_state: ResMut<NextState<ModalState>>,
+  mut commands: Commands,
+  scene_assets: Res<SceneAssets>,
+) {
+  next_modal_state.set(ModalState::Open);
+  info!("show level end screen");
+  commands
+    .spawn((
+      ModalScreenElement,
+      Node {
+        width: Val::Percent(100.0),
+        height: Val::Percent(100.0),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+      },
+    ))
+    .with_children(|parent| {
+      parent.spawn((
+        Text::new("Level Complete"),
+        TextFont {
+          font: scene_assets.font.clone(),
+          font_size: FONT_SIZE_MEDIUM,
+          ..default()
+        },
+      ));
+    });
+}
+
 
 fn show_dead_screen(
   mut next_modal_state: ResMut<NextState<ModalState>>,
