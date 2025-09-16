@@ -1,7 +1,7 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState, LevelConfiguration}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -43,12 +43,21 @@ pub struct RoidPlugin;
 impl Plugin for RoidPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(OnEnter(GameState::GameInit), spawn_roids)
+      .insert_resource(WaveSpawnTimer{ timer: Timer::from_seconds(1., TimerMode::Repeating), count:1 })
+      .add_systems(OnEnter(GameState::LevelInit), init_waves)
+      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates))
       .add_systems(
         Update,
         check_asteroid_health.in_set(GameSchedule::PreDespawnEntities),
       );
   }
+}
+
+
+#[derive(Resource, Default)]
+struct WaveSpawnTimer{
+  timer:Timer,
+  count:u32,
 }
 
 #[derive(Component, Default)]
@@ -121,8 +130,6 @@ fn check_asteroid_health(
         rng.random_range(-1. ..1.),
       );
 
-    
-
     commands.spawn((
         GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
@@ -154,9 +161,33 @@ fn check_asteroid_health(
   }
 }
 
-fn spawn_roids(mut commands: Commands, scene_assets: Res<SceneAssets>) {
-  let mut rng = rand::rng();
 
+fn init_waves(
+  level_config: Res<LevelConfiguration>,
+  mut spawn_timer:ResMut<WaveSpawnTimer>,
+){
+  spawn_timer.timer = Timer::from_seconds(level_config.wave_time, TimerMode::Repeating);
+  spawn_timer.count = level_config.wave_count;
+  //set it to trigger this tick
+  spawn_timer.timer.set_elapsed( Duration::from_secs_f32(level_config.wave_time));
+}
+
+fn spawn_roids(
+  mut commands: Commands, 
+  scene_assets: Res<SceneAssets>,
+  mut spawn_timer: ResMut<WaveSpawnTimer>,
+  level_config:Res<LevelConfiguration>,
+  time:Res<Time>,
+) {
+  if spawn_timer.count == 0 { return; }
+  
+  spawn_timer.timer.tick(time.delta());
+  if !spawn_timer.timer.finished() { return; }
+
+  //spawn a new wave
+  spawn_timer.count-=1;
+  
+  let mut rng = rand::rng();
   for _ in 0..ROID_COUNT {
     let angle = rng.random_range(0. ..PI * 2.);
     let return_angle = angle + rng.random_range(-0.3..0.3);

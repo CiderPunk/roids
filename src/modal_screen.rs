@@ -253,11 +253,21 @@ fn update_modal_screen(
 ) {
   for InputTriggerEvent { action, input_type } in ev_input_event.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
-      next_modal_state.set(ModalState::Closed);
+      
       match state.get() {
-        GameState::StartScreen => next_state.set(GameState::GameInit),
-        GameState::Dead => next_state.set(GameState::Alive),
-        GameState::GameOver => next_state.set(GameState::StartScreen),
+        GameState::StartScreen => {
+          next_modal_state.set(ModalState::Closed);
+          next_state.set(GameState::GameInit);
+         },
+        GameState::Dead => {
+          next_modal_state.set(ModalState::Closed);
+          next_state.set(GameState::Alive);
+         },
+        GameState::GameOver => {
+          next_modal_state.set(ModalState::Closed);
+          next_state.set(GameState::StartScreen);
+        },
+        GameState::LevelEnd => (),
         _ => (),
       }
     }

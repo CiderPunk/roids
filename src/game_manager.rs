@@ -13,8 +13,9 @@ pub enum GameState {
   #[default]
   Startup,
   StartScreen,
-  LevelEnd,
   GameInit,
+  LevelInit,
+  LevelEnd,
   Alive,
   Dead,
   GameOver,
@@ -29,15 +30,13 @@ pub enum PauseState {
 }
 
 
-#[derive(Component)]
+#[derive(Resource)]
 pub struct LevelConfiguration{
-  wave_size:u32,
-  wave_count:u32,
-  wave_timer:Timer,
-  max_speed:f32,
-  pseed_variance:f32,
-
-
+  pub wave_size:u32,
+  pub wave_count:u32,
+  pub wave_time:f32,
+  pub max_speed:f32,
+  pub speed_variance:f32,
 }
 
 
@@ -53,8 +52,10 @@ impl Plugin for GameManagerPlugin {
       .init_state::<GameState>()
       .init_state::<PauseState>()
       .insert_resource(GameManager{ level_time: Stopwatch::new(), level_comnplete_test_timer: Timer::from_seconds(0.5, TimerMode::Repeating) })
+      .insert_resource(LevelConfiguration{ wave_size: 4, wave_count: 1, wave_time: 5., max_speed: 30., speed_variance: 15. })
       .add_systems(OnEnter(AssetState::Ready), start_screen)
       .add_systems(OnEnter(GameState::GameInit), init_game)
+      .add_systems(OnEnter(GameState::LevelInit), init_level)
       .add_systems(OnExit(GameState::GameOver), clean_game)
       .add_systems(Update, check_for_pause.run_if(in_state(PauseState::Running)))
       .add_systems(Update,check_game_state.in_set(GameSchedule::EntityUpdates)
@@ -71,6 +72,10 @@ fn clean_game(mut commands: Commands, query: Query<Entity, With<GameEntity>>) {
 }
 
 fn init_game(mut next_state: ResMut<NextState<GameState>>) {
+  info!("Game initialized");
+  next_state.set(GameState::LevelInit);
+}
+fn init_level(mut next_state: ResMut<NextState<GameState>>) {
   info!("Game initialized");
   next_state.set(GameState::Alive);
 }
@@ -100,13 +105,11 @@ if game_manager.level_time.elapsed_secs() < LEVEL_START_TIME { return; }
   game_manager.level_comnplete_test_timer.tick(time.delta());
   
   if !game_manager.level_comnplete_test_timer.just_finished(){ return; }
-
-
   for bounds in roid_query.iter(){
     if bounds.0 { 
       return; }
   }
-    info!("LEVEL END");
+  info!("LEVEL END");
   next_state.set(GameState::LevelEnd);
 
 }
