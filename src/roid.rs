@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{GameEntity, GameState, LevelConfiguration}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{CurrentLevel, GameEntity, GameState, LevelConfiguration, LEVEL_DATA}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -45,7 +45,7 @@ impl Plugin for RoidPlugin {
     app
       .insert_resource(WaveSpawnTimer{ timer: Timer::from_seconds(1., TimerMode::Repeating), count:1 })
       .add_systems(OnEnter(GameState::LevelInit), init_waves)
-      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates).run_if(in_state(GameState::Alive)))
       .add_systems(
         Update,
         check_asteroid_health.in_set(GameSchedule::PreDespawnEntities),
@@ -163,22 +163,24 @@ fn check_asteroid_health(
 
 
 fn init_waves(
-  level_config: Res<LevelConfiguration>,
+  current_level: Res<CurrentLevel>,
   mut spawn_timer:ResMut<WaveSpawnTimer>,
 ){
-  spawn_timer.timer = Timer::from_seconds(level_config.wave_time, TimerMode::Repeating);
-  spawn_timer.count = level_config.wave_count;
+  let level = LEVEL_DATA[current_level.0];
+  spawn_timer.timer = Timer::from_seconds(level.wave_time, TimerMode::Repeating);
+  spawn_timer.count = level.wave_count;
   //set it to trigger this tick
-  spawn_timer.timer.set_elapsed( Duration::from_secs_f32(level_config.wave_time));
+  spawn_timer.timer.set_elapsed( Duration::from_secs_f32(level.wave_time));
 }
 
 fn spawn_roids(
   mut commands: Commands, 
   scene_assets: Res<SceneAssets>,
   mut spawn_timer: ResMut<WaveSpawnTimer>,
-  level_config:Res<LevelConfiguration>,
+  current_level: Res<CurrentLevel>,
   time:Res<Time>,
 ) {
+  let level = LEVEL_DATA[current_level.0];
   if spawn_timer.count == 0 { return; }
   
   spawn_timer.timer.tick(time.delta());
@@ -188,7 +190,7 @@ fn spawn_roids(
   spawn_timer.count-=1;
   
   let mut rng = rand::rng();
-  for _ in 0..ROID_COUNT {
+  for _ in 0..level.wave_size {
     let angle = rng.random_range(0. ..PI * 2.);
     let return_angle = angle + rng.random_range(-0.3..0.3);
 
@@ -200,7 +202,7 @@ fn spawn_roids(
 
     let start_position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
     let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin())
-      * -rng.random_range(ROID_LOW_SPEED..ROID_HIGH_SPEED);
+      * -rng.random_range(level.max_speed - level.speed_variance..level.max_speed);
     //let velocity = Vec3::ZERO;
 
     commands.spawn((

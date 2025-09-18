@@ -218,7 +218,7 @@ fn spawn_effect_sprites(
       continue;
     };
 
-    let transform = Transform::from_translation(sprite.translation)
+    let transform = Transform::from_translation(sprite.translation + Vec3::new(0., rng.random_range(0.0 .. 0.3), 0.))
       .with_scale(Vec3::splat(sprite.scale))
       //.with_rotation(Quat::from_euler(EulerRot::XZX, PI * -0.5, rng.random_range(-1. .. 1.) * PI, 0.));
       .with_rotation(Quat::from_rotation_y(rng.random_range(-1. ..1.) * PI));
