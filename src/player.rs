@@ -157,11 +157,17 @@ fn create_player(query: Query<Entity, With<Player>>, mut commands: Commands) {
 }
 
 fn create_ship(
+  query:Query<&PlayerShip>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
   mut player: Single<&mut Player>,
   mut ev_lives_writer: EventWriter<LifeEvent>,
 ) {
+
+
+  if !query.is_empty(){
+    return;
+  }
   player.lives -= 1;
   ev_lives_writer.write(LifeEvent::new(player.lives));
   info!("Create ship");
@@ -197,21 +203,6 @@ commands.spawn((
     SceneRoot(scene_assets.flame.clone()),
     Visibility::Hidden,
   ));
-
-  /*.with_child((
-
-      SpotLight {
-        intensity: 500_000_000.0, // lumens
-        color: Color::WHITE,
-        shadows_enabled: false,
-        inner_angle: PI /8. * 0.85,
-        outer_angle: PI / 8.,
-        range:50.,
-        ..default()
-      },
-      Transform::from_translation(Vec3::ZERO),
-    ));
-  */
 }
 
 fn create_shield(

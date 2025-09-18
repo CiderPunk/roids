@@ -14,12 +14,27 @@ const FONT_SIZE_HUGE: f32 = 190.;
 const FONT_SIZE_MEDIUM: f32 = 60.;
 const FONT_SIZE_SMALL: f32 = 40.;
 
+#[derive(Resource)]
+struct ModalTimer(Timer);
+
+const DEATH_EUPHEMISMS:[&'static str;8] = [
+  "You've Died",
+  "You're Dead",
+  "You've Un-Alived",
+  "You are Deceased",
+  "You have Expired",
+  "You've 'Sploded",
+  "You've Vapourised", 
+  "You have ceased to be'", 
+];
+
 pub struct ModalScreenPlugin;
 
 impl Plugin for ModalScreenPlugin {
   fn build(&self, app: &mut bevy::app::App) {
     app
       .init_state::<ModalState>()
+      .insert_resource(ModalTimer(Timer::from_seconds(5., TimerMode::Once)))
       .add_systems(OnEnter(GameState::GameOver), show_game_over_screen)
       .add_systems(OnEnter(GameState::Dead), show_dead_screen)
       .add_systems(OnEnter(GameState::StartScreen), show_start_screen)
@@ -47,7 +62,12 @@ fn show_level_end_screen(
   mut next_modal_state: ResMut<NextState<ModalState>>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
+  mut modal_timer:ResMut<ModalTimer>,
 ) {
+
+  modal_timer.0.reset();
+  modal_timer.0.unpause();
+
   next_modal_state.set(ModalState::Open);
   info!("show level end screen");
   commands
@@ -58,6 +78,7 @@ fn show_level_end_screen(
         height: Val::Percent(100.0),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
+        flex_direction: FlexDirection::Column,
         ..default()
       },
     ))
@@ -78,7 +99,13 @@ fn show_dead_screen(
   mut next_modal_state: ResMut<NextState<ModalState>>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
+  player:Single<&Player>,
+  mut modal_timer:ResMut<ModalTimer>,
 ) {
+  modal_timer.0.reset();
+  modal_timer.0.unpause();
+
+  let mut rng = rand::rng();
   next_modal_state.set(ModalState::Open);
   info!("show dead screen");
   commands
@@ -89,18 +116,28 @@ fn show_dead_screen(
         height: Val::Percent(100.0),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
+        flex_direction: FlexDirection::Column,
         ..default()
       },
     ))
     .with_children(|parent| {
-      parent.spawn((
-        Text::new("DEADS"),
+     parent.spawn((
+        Text::new(DEATH_EUPHEMISMS[rng.random_range(0 .. DEATH_EUPHEMISMS.len())]),
         TextFont {
           font: scene_assets.font.clone(),
           font_size: FONT_SIZE_MEDIUM,
           ..default()
         },
       ));
+      parent.spawn((
+        Text::new(format!("Lives remaining: {}", player.lives)),
+        TextFont {
+          font: scene_assets.font.clone(),
+          font_size: FONT_SIZE_SMALL,
+          ..default()
+        },
+      ));
+
     });
 }
 
@@ -115,7 +152,12 @@ fn show_game_over_screen(
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
   player:Single<&Player>,
+  mut modal_timer:ResMut<ModalTimer>,
 ) {
+  modal_timer.0.reset();
+  modal_timer.0.unpause();
+
+
   next_modal_state.set(ModalState::Open);
   info!("show game over screen");
   commands
@@ -155,7 +197,9 @@ fn show_start_screen(
   mut next_modal_state: ResMut<NextState<ModalState>>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
+  mut modal_timer:ResMut<ModalTimer>,
 ) {
+  modal_timer.0.pause();
   next_modal_state.set(ModalState::Open);
 
   info!("show start screen");
@@ -250,16 +294,35 @@ fn update_modal_screen(
   state: Res<State<GameState>>,
   mut next_state: ResMut<NextState<GameState>>,
   mut next_modal_state: ResMut<NextState<ModalState>>,
+  mut modal_timer:ResMut<ModalTimer>,
+  time:Res<Time>,
 ) {
+  modal_timer.0.tick(time.delta());
+  let mut trigger = false;
   for InputTriggerEvent { action, input_type } in ev_input_event.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
-      next_modal_state.set(ModalState::Closed);
-      match state.get() {
-        GameState::StartScreen => next_state.set(GameState::GameInit),
-        GameState::Dead => next_state.set(GameState::Alive),
-        GameState::GameOver => next_state.set(GameState::StartScreen),
-        _ => (),
-      }
+      trigger = true;
+    }
+  }
+  if trigger || modal_timer.0.just_finished(){
+    match state.get() {
+      GameState::StartScreen => {
+        next_modal_state.set(ModalState::Closed);
+        next_state.set(GameState::GameInit);
+        },
+      GameState::Dead => {
+        next_modal_state.set(ModalState::Closed);
+        next_state.set(GameState::Alive);
+        },
+      GameState::GameOver => {
+        next_modal_state.set(ModalState::Closed);
+        next_state.set(GameState::StartScreen);
+      },
+      GameState::LevelEnd => {
+        next_modal_state.set(ModalState::Closed);
+        next_state.set(GameState::LevelInit);
+      },
+      _ => (),
     }
   }
 }
