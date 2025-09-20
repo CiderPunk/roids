@@ -39,16 +39,17 @@ pub struct LevelConfiguration{
   pub wave_time:f32,
   pub max_speed:f32,
   pub speed_variance:f32,
+  pub time_before_comnplete:f32,
 }
 
 #[derive(Resource, Default)]
 pub struct CurrentLevel(pub usize);
 
 pub const LEVEL_DATA: [LevelConfiguration; 4] =[
-  LevelConfiguration{ wave_size: 2, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15. },
-  LevelConfiguration{ wave_size: 1, wave_count: 10, wave_time: 1., max_speed: 40., speed_variance: 10. },
-  LevelConfiguration{ wave_size: 10, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15. },
-  LevelConfiguration{ wave_size: 4, wave_count: 2, wave_time: 10., max_speed: 30., speed_variance: 15. },
+  LevelConfiguration{ wave_size: 2, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete:5. },
+  LevelConfiguration{ wave_size: 1, wave_count: 10, wave_time: 1., max_speed: 40., speed_variance: 10., time_before_comnplete:5. },
+  LevelConfiguration{ wave_size: 10, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete:5. },
+  LevelConfiguration{ wave_size: 4, wave_count: 2, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete: 5.},
 ];
 
 
@@ -127,13 +128,14 @@ struct GameManager{
 
 
 fn check_game_state(
+  current_level:Res<CurrentLevel>,
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
   roid_query:Query<&BoundsWarp, With<Roid>>,
   mut next_state: ResMut<NextState<GameState>>,
 ){
   game_manager.level_time.tick(time.delta());
-  if game_manager.level_time.elapsed_secs() < LEVEL_START_TIME { return; }
+  if game_manager.level_time.elapsed_secs() < LEVEL_DATA[current_level.0].time_before_comnplete { return; }
 
   game_manager.level_test_timer.tick(time.delta());
   
