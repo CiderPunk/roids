@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{CurrentLevel, GameEntity, GameState, LevelConfiguration, LEVEL_DATA}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{CurrentLevel, GameEntity, GameState}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -166,7 +166,9 @@ fn init_waves(
   current_level: Res<CurrentLevel>,
   mut spawn_timer:ResMut<WaveSpawnTimer>,
 ){
-  let level = LEVEL_DATA[current_level.0];
+  let Some(level) = current_level.0 else {
+    return;
+  };
   spawn_timer.timer = Timer::from_seconds(level.wave_time, TimerMode::Repeating);
   spawn_timer.count = level.wave_count;
   //set it to trigger this tick
@@ -180,7 +182,9 @@ fn spawn_roids(
   current_level: Res<CurrentLevel>,
   time:Res<Time>,
 ) {
-  let level = LEVEL_DATA[current_level.0];
+  let Some(level) = current_level.0 else {
+    return;
+  };
   if spawn_timer.count == 0 { return; }
   
   spawn_timer.timer.tick(time.delta());

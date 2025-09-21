@@ -24,7 +24,6 @@ pub struct SceneAssets {
   pub font: Handle<Font>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
-  
   pub ship_shield: Handle<Mesh>,
   pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
