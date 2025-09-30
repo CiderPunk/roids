@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 
 
-#[derive(Clone, Copy)]
+#[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
 pub struct LevelConfiguration{
   pub wave_size:u32,
   pub wave_count:u32,
@@ -11,7 +11,6 @@ pub struct LevelConfiguration{
   pub speed_variance:f32,
   pub time_before_comnplete:f32,
 }
-
 
 pub const LEVEL_DATA: [LevelConfiguration; 4] =[
   LevelConfiguration{ wave_size: 2, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete:5. },

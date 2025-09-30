@@ -1,9 +1,7 @@
-use std::time::Duration;
-
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerEvent}, level::LEVEL_DATA, roid::Roid, scheduling::GameSchedule
+  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::LEVEL_DATA, roid::Roid, scheduling::GameSchedule
 };
 use crate::level::LevelConfiguration;
 
@@ -154,10 +152,10 @@ fn check_game_state(
 }
 
 fn check_for_pause(
-  mut ev_input_reader: EventReader<InputTriggerEvent>,
+  mut msg_input_reader: MessageReader<InputTriggerMessage>,
   mut next_state: ResMut<NextState<PauseState>>,
 ) {
-  for InputTriggerEvent { action, input_type } in ev_input_reader.read() {
+  for InputTriggerMessage { action, input_type } in msg_input_reader.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Pause {
       info!("Pausing game");
       next_state.set(PauseState::Paused);

@@ -1,13 +1,8 @@
 use crate::{
-  camera::CameraBoundsChangeEvent, game_manager::{GameEntity, GameState}, scheduling::GameSchedule, shaders::ShaderMaterials
+  camera::CameraBoundsChangeMessage, game_manager::{GameEntity, GameState}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 use bevy::{
-  asset::RenderAssetUsages,
-  prelude::*,
-  render::{
-    mesh::Indices,
-    render_resource::{AsBindGroup, ShaderRef},
-  },
+  asset::RenderAssetUsages, mesh::{Indices, PrimitiveTopology}, prelude::*, render::render_resource::AsBindGroup, shader::ShaderRef
 };
 
 const BOUNDS_SHADER_PATH: &str = "shaders/bounds_material.wgsl";
@@ -90,7 +85,7 @@ fn spawn_bounds(
   //scene_assets: Res<SceneAssets>,
   mut meshes: ResMut<Assets<Mesh>>,
   materials:Res<ShaderMaterials>,
-  mut ev_bounds_writer: EventWriter<CameraBoundsChangeEvent>,
+  mut ev_bounds_writer: MessageWriter<CameraBoundsChangeMessage>,
 ) {
   info!("creating bounds mesh");
   let mesh_handle: Handle<Mesh> = meshes.add(create_frame_mesh(
@@ -108,7 +103,7 @@ fn spawn_bounds(
     MeshMaterial3d(materials.bounds.clone()),
     Transform::from_translation(Vec3::Y * 5.0),
   ));
-  ev_bounds_writer.write(CameraBoundsChangeEvent);
+  ev_bounds_writer.write(CameraBoundsChangeMessage);
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -135,7 +130,7 @@ fn create_frame_mesh(half_width: f32, half_height: f32, border: f32) -> Mesh {
   let hhb = hh + (border * 0.5);
   let hwb = hw + (border * 0.5);
   Mesh::new(
-    bevy::render::mesh::PrimitiveTopology::TriangleList,
+    PrimitiveTopology::TriangleList,
     RenderAssetUsages::default(),
   )
   .with_inserted_attribute(

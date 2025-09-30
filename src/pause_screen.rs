@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
   asset_loader::SceneAssets,
   game_manager::PauseState,
-  input::{InputEventAction, InputEventType, InputTriggerEvent},
+  input::{InputEventAction, InputEventType, InputTriggerMessage},
 };
 pub struct PauseScreenPlugin;
 impl Plugin for PauseScreenPlugin {
@@ -22,10 +22,10 @@ impl Plugin for PauseScreenPlugin {
 struct PauseScreenElement;
 
 fn update_pause_screen(
-  mut ev_input_event: EventReader<InputTriggerEvent>,
+  mut ev_input_event: EventReader<InputTriggerMessage>,
   mut next_state: ResMut<NextState<PauseState>>,
 ) {
-  for InputTriggerEvent { action, input_type } in ev_input_event.read() {
+  for InputTriggerMessage { action, input_type } in ev_input_event.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
       info!("Resuming game");
       next_state.set(PauseState::Running);

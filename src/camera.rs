@@ -9,15 +9,15 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<CameraBoundsChangeEvent>()
+      .add_message::<CameraBoundsChangeMessage>()
       .add_systems(Startup, spawn_camera)
       .add_systems(Update, (on_resize, update_camera_bounds, follow_player.in_set(GameSchedule::EntityUpdates) ))
       .add_systems(OnEnter(GameState::StartScreen), reset_camera);
   }
 }
 
-#[derive(Event)]
-pub struct CameraBoundsChangeEvent;
+#[derive(Message)]
+pub struct CameraBoundsChangeMessage;
 
 
 #[derive(Component)]
@@ -69,18 +69,18 @@ fn get_point_on_world_plane(camera: &Camera, camera_transform:&GlobalTransform, 
 
 
 fn on_resize(
-  mut ev_resize_reader: EventReader<WindowResized>,
-  mut ev_bound_change_writer: EventWriter<CameraBoundsChangeEvent>,
+  mut ev_resize_reader: MessageReader<WindowResized>,
+  mut ev_bound_change_writer: MessageWriter<CameraBoundsChangeMessage>,
 ){
   if !ev_resize_reader.is_empty(){
     ev_resize_reader.clear();
     info!("Resize event");
-    ev_bound_change_writer.write(CameraBoundsChangeEvent);
+    ev_bound_change_writer.write(CameraBoundsChangeMessage);
   }
 }
 
 fn update_camera_bounds(
-  mut ev_bounds_reader:EventReader<CameraBoundsChangeEvent>,
+  mut ev_bounds_reader:MessageReader<CameraBoundsChangeMessage>,
   camera_query:Single<(&Camera, &GlobalTransform, &mut GameCamera)>,
   bounds:Single<&Bounds>,
   window:Single<&Window>,
@@ -92,20 +92,12 @@ fn update_camera_bounds(
     let Ok(mid) = get_point_on_world_plane(camera, camera_transform, Vec2::new(window.width() * 0.5, window.height() * 0.5)) else{ panic!("Failed getting mid") };
     let Ok(top_left) = get_point_on_world_plane(camera, camera_transform,Vec2::new(0.,0.)) else{  panic!("Failed getting top left") };
     let Ok(bottom_right) = get_point_on_world_plane(camera, camera_transform,Vec2::new(window.width(),window.height())) else{  panic!("Failed getting bottom right")};
-
     let visible_top_left = top_left - mid;
     let visible_bottom_right = bottom_right - mid;
-
-
     info!("visible tl:{:} br:{:}", visible_top_left, visible_bottom_right);
-
-
     let bounds_limit_tl = (bounds.half_size - visible_top_left).max(Vec3::new(0.,0., 0.));
     let bounds_limit_br = (-bounds.half_size - visible_bottom_right).min(Vec3::new(0.,0., 0.));
-
     game_camera.limits = Aabb2d { max: Vec2::new(bounds_limit_tl.x, bounds_limit_tl.z), min: Vec2::new(bounds_limit_br.x, bounds_limit_br.z) };
-    
-
     info!("limits updated tl:{:} br:{:}", bounds_limit_tl, bounds_limit_br);
   }
 }

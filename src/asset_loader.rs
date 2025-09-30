@@ -109,9 +109,7 @@ fn extract_assets(
   scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
   scene_assets.flame = gltf.named_scenes["Flame"].clone();
   scene_assets.bullet = meshes.add(
-    Sphere::new(BULLET_SIZE)
-      .mesh()
-      .kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 2 }),
+    Sphere::default().mesh().ico(2).unwrap()
   );
   scene_assets.bullet_material = materials.add(StandardMaterial{
 

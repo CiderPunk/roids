@@ -5,7 +5,7 @@ use crate::scheduling::GameSchedule;
 pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
-    app.add_event::<HealthEvent>().add_systems(
+    app.add_event::<HealthMessage>().add_systems(
       Update,
       (
         apply_health_changes.in_set(GameSchedule::HealthAdjust),
@@ -23,14 +23,14 @@ fn remove_dead(mut commands: Commands, query: Query<(Entity, &Health)>) {
   }
 }
 
-#[derive(Event)]
-pub struct HealthEvent {
+#[derive(Message)]
+pub struct HealthMessage {
   pub entity: Entity,
   pub inflictor: Option<Entity>,
   pub health_adjustment: f32,
 }
 
-impl HealthEvent {
+impl HealthMessage {
   pub fn new(entity: Entity, inflictor: Option<Entity>, health_adjustment: f32) -> Self {
     Self {
       entity,
@@ -48,10 +48,10 @@ pub struct Health {
 }
 
 fn apply_health_changes(
-  mut ev_health_reader: EventReader<HealthEvent>,
+  mut ev_health_reader: MessageReader<HealthMessage>,
   mut query: Query<&mut Health>,
 ) {
-  for HealthEvent {
+  for HealthMessage {
     entity,
     inflictor,
     health_adjustment,
