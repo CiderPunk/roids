@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, effect_sprite::EffectSpriteEvent,
+  asset_loader::SceneAssets, bounds::BoundsWarp, effect_sprite::EffectSpriteMessage,
   game_manager::GameEntity, movement::Velocity, scheduling::GameSchedule,
 };
 
@@ -10,8 +10,8 @@ pub struct BulletPlugin;
 impl Plugin for BulletPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<ShootEvent>()
-      .add_event::<BulletHitEvent>()
+      .add_message::<ShootMessage>()
+      .add_message::<BulletHitMessage>()
       .add_systems(
         Update,
         (do_shooting, time_to_live, bullet_hit).in_set(GameSchedule::EntityUpdates),
@@ -21,10 +21,10 @@ impl Plugin for BulletPlugin {
 
 fn do_shooting(
   mut commands: Commands,
-  mut ev_shoot_reader: EventReader<ShootEvent>,
+  mut ev_shoot_reader: MessageReader<ShootMessage>,
   scene_assets: Res<SceneAssets>,
 ) {
-  for &ShootEvent {
+  for &ShootMessage {
     is_player,
     start,
     velocity,
@@ -53,17 +53,17 @@ fn do_shooting(
 
 fn bullet_hit(
   mut commands: Commands,
-  mut ev_bullet_hit_reader: EventReader<BulletHitEvent>,
-  mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
+  mut ev_bullet_hit_reader: MessageReader<BulletHitMessage>,
+  mut ev_effect_writer: MessageWriter<EffectSpriteMessage>,
   query: Query<&GlobalTransform>,
 ) {
-  for &BulletHitEvent { bullet } in ev_bullet_hit_reader.read() {
+  for &BulletHitMessage { bullet } in ev_bullet_hit_reader.read() {
     //add effect
     commands.entity(bullet).despawn();
     let Ok(transform) = query.get(bullet) else {
       continue;
     };
-    ev_effect_writer.write(EffectSpriteEvent::new(
+    ev_effect_writer.write(EffectSpriteMessage::new(
       transform.translation(),
       4.,
       Vec3::ZERO,
@@ -85,8 +85,8 @@ fn time_to_live(
   }
 }
 
-#[derive(Event)]
-pub struct ShootEvent {
+#[derive(Message)]
+pub struct ShootMessage {
   pub is_player: bool,
   pub start: Vec3,
   pub velocity: Vec3,
@@ -95,7 +95,7 @@ pub struct ShootEvent {
   pub owner: Entity,
 }
 
-impl ShootEvent {
+impl ShootMessage {
   pub fn new(
     is_player: bool,
     start: Vec3,
@@ -126,12 +126,12 @@ pub struct Bullet {
   pub owner: Option<Entity>,
 }
 
-#[derive(Event)]
-pub struct BulletHitEvent {
+#[derive(Message)]
+pub struct BulletHitMessage {
   bullet: Entity,
 }
 
-impl BulletHitEvent {
+impl BulletHitMessage {
   pub fn new(entity: Entity) -> Self {
     Self { bullet: entity }
   }

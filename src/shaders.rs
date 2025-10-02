@@ -1,7 +1,7 @@
 
 use bevy::{
   prelude::*,
-  render::render_resource::{AsBindGroup, ShaderRef},
+  render::render_resource::AsBindGroup, shader::ShaderRef,
 };
 pub struct ShadersPlugin;
 

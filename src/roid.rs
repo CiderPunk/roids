@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteEvent, game_manager::{CurrentLevel, GameEntity, GameState, LevelConfiguration, LEVEL_DATA}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreEvent, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{CurrentLevel, GameEntity, GameState}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -66,9 +66,9 @@ pub struct Roid(RoidSize);
 fn check_asteroid_health(
   mut commands: Commands,
   query: Query<(&Roid, &Health, &GlobalTransform, &Velocity, &BoundsWarp)>,
-  mut ev_effect_writer: EventWriter<EffectSpriteEvent>,
+  mut ev_effect_writer: EventWriter<EffectSpriteMessage>,
   scene_assets: Res<SceneAssets>,
-  mut ev_score_writer:EventWriter<ScoreEvent>,
+  mut ev_score_writer:EventWriter<ScoreMessage>,
 ) {
   let mut rng = rand::rng();
   for (roid, health, transform, velocity, orig_bounds_warp) in query.iter() {
@@ -76,7 +76,7 @@ fn check_asteroid_health(
       continue;
     }
 
-    ev_score_writer.write(ScoreEvent::new(match roid.0 {
+    ev_score_writer.write(ScoreMessage::new(match roid.0 {
         RoidSize::Large => 50,
         RoidSize::Medium => 20,
         RoidSize::Small => 10,
@@ -87,7 +87,7 @@ fn check_asteroid_health(
       RoidSize::Medium => 12.,
       RoidSize::Small => 8.,
     };
-    ev_effect_writer.write(EffectSpriteEvent::new(
+    ev_effect_writer.write(EffectSpriteMessage::new(
       transform.translation(),
       effect_scale,
       velocity.0,
@@ -166,7 +166,9 @@ fn init_waves(
   current_level: Res<CurrentLevel>,
   mut spawn_timer:ResMut<WaveSpawnTimer>,
 ){
-  let level = LEVEL_DATA[current_level.0];
+  let Some(level) = current_level.0 else {
+    return;
+  };
   spawn_timer.timer = Timer::from_seconds(level.wave_time, TimerMode::Repeating);
   spawn_timer.count = level.wave_count;
   //set it to trigger this tick
@@ -180,7 +182,9 @@ fn spawn_roids(
   current_level: Res<CurrentLevel>,
   time:Res<Time>,
 ) {
-  let level = LEVEL_DATA[current_level.0];
+  let Some(level) = current_level.0 else {
+    return;
+  };
   if spawn_timer.count == 0 { return; }
   
   spawn_timer.timer.tick(time.delta());

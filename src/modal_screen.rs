@@ -6,7 +6,7 @@ use rand::Rng;
 use crate::{
   asset_loader::SceneAssets,
   game_manager::GameState,
-  input::{InputEventAction, InputEventType, InputTriggerEvent},
+  input::{InputEventAction, InputEventType, InputTriggerMessage},
   movement::Rotation, player::Player,
 };
 
@@ -290,7 +290,7 @@ fn show_start_screen(
 }
 
 fn update_modal_screen(
-  mut ev_input_event: EventReader<InputTriggerEvent>,
+  mut ev_input_event: EventReader<InputTriggerMessage>,
   state: Res<State<GameState>>,
   mut next_state: ResMut<NextState<GameState>>,
   mut next_modal_state: ResMut<NextState<ModalState>>,
@@ -299,7 +299,7 @@ fn update_modal_screen(
 ) {
   modal_timer.0.tick(time.delta());
   let mut trigger = false;
-  for InputTriggerEvent { action, input_type } in ev_input_event.read() {
+  for InputTriggerMessage { action, input_type } in ev_input_event.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
       trigger = true;
     }

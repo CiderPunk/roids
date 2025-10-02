@@ -1,14 +1,9 @@
 use std::f32::consts::PI;
 
 use bevy::{
-  asset::RenderAssetUsages,
-  platform::collections::HashMap,
-  prelude::*,
-  render::{
-    mesh::MeshTag,
-    render_resource::{AsBindGroup, ShaderRef, ShaderType},
-  },
+  asset::RenderAssetUsages, mesh::{Indices, MeshTag, PrimitiveTopology}, platform::collections::HashMap, prelude::*, render::render_resource::{AsBindGroup, ShaderType}, shader::ShaderRef
 };
+
 use rand::Rng;
 
 use crate::{
@@ -76,21 +71,21 @@ impl Plugin for EffectSpritePlugin {
     app
       .init_resource::<EffectCollection>()
       .add_plugins(MaterialPlugin::<EffectSpriteMaterial>::default())
-      .add_event::<EffectSpriteEvent>()
+      .add_message::<EffectSpriteMessage>()
       .add_systems(Startup, init_effect_sprite)
       .add_systems(Update, (spawn_effect_sprites, cleanup_effect_sprites));
   }
 }
 
-#[derive(Event)]
-pub struct EffectSpriteEvent {
+#[derive(Message)]
+pub struct EffectSpriteMessage {
   translation: Vec3,
   scale: f32,
   velocity: Vec3,
   effect: EffectSpriteType,
 }
 
-impl EffectSpriteEvent {
+impl EffectSpriteMessage {
   pub fn new(translation: Vec3, scale: f32, velocity: Vec3, effect: EffectSpriteType) -> Self {
     Self {
       translation,
@@ -181,8 +176,7 @@ fn init_effect_sprite(
 }
 
 fn create_quad() -> Mesh {
-  Mesh::new(
-    bevy::render::mesh::PrimitiveTopology::TriangleList,
+  Mesh::new(PrimitiveTopology::TriangleList,
     RenderAssetUsages::default(),
   )
   .with_inserted_attribute(
@@ -202,18 +196,18 @@ fn create_quad() -> Mesh {
       [0.0, 1.0, 0.0],
     ],
   )
-  .with_inserted_indices(bevy::render::mesh::Indices::U32(vec![0, 2, 1, 0, 3, 2]))
+  .with_inserted_indices(Indices::U32(vec![0, 2, 1, 0, 3, 2]))
 }
 
 fn spawn_effect_sprites(
   mut commands: Commands,
-  mut ev_effect_reader: EventReader<EffectSpriteEvent>,
+  mut msg_effect_reader: MessageReader<EffectSpriteMessage>,
   mesh: Res<EffectQuad>,
   effects: Res<EffectCollection>,
   time: Res<Time>,
 ) {
   let mut rng = rand::rng();
-  for sprite in ev_effect_reader.read() {
+  for sprite in msg_effect_reader.read() {
     let Some(effect) = effects.0.get(&sprite.effect) else {
       continue;
     };

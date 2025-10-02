@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::plugins::TransformSystem};
 
 use crate::game_manager::PauseState;
 
@@ -36,7 +36,7 @@ impl Plugin for SchedulingPlugin {
       .configure_sets(
         PostUpdate,
         GameSchedule::CollisionDetection
-          .after(TransformSystem::TransformPropagate)
+          .after(TransformSystems::Propagate)
           .run_if(in_state(PauseState::Running)),
       );
   }

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies.bevy]
-version="0.16.1"
+version="0.17.0"
 
 [features]
 watcher = [
@@ -16,6 +16,9 @@ watcher = [
 [dependencies]
 rand = "0.9.2"
 getrandom = { version = "0.3", features = ["wasm_js"] }
+bevy_common_assets = "0.13.0"
+serde = "1.0.228"
+serde_json = "1.0.145"
 
 
 # Enable a small amount of optimization in the dev profile.
@@ -32,8 +35,6 @@ linker = "rust-lld.exe"
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
-
-
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 uuid = { version = "1.18.1", default-features = false, features = ["js"] }

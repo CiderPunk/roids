@@ -17,6 +17,8 @@ mod scheduling;
 mod starfield;
 mod game_ui;
 mod shaders;
+mod ufo;
+mod level;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
