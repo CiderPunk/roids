@@ -3,8 +3,8 @@
     forward_io::VertexOutput,
 }
 
-@group(2) @binding(0) var<uniform> color1: vec4<f32>;
-@group(2) @binding(1) var<uniform> color2: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> color1: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> color2: vec4<f32>;
 
 @fragment
 fn fragment(

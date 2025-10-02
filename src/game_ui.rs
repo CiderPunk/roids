@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, game_manager::GameState, player::{LifeEvent, Player, ScoreEvent}, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, game_manager::GameState, player::{LifeEvent, Player, ScoreMessage}, scheduling::GameSchedule};
 
 
 const GAME_UI_FONT_SIZE: f32 = 34.;
@@ -20,7 +20,7 @@ impl Plugin for GameUiPlugin{
 fn update_score(
   player:Single<&Player>,
   mut text:Single<&mut Text, With<ScoreDisplay>>,
-  mut ev_score_reader: EventReader<ScoreEvent>,
+  mut ev_score_reader: EventReader<ScoreMessage>,
 ){
   if !ev_score_reader.is_empty(){
     text.0 = format!("{:}", player.score);

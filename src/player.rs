@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootEvent, collision::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::Collider, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -26,8 +26,8 @@ impl Plugin for PlayerPlugin {
   fn build(&self, app: &mut App) {
     app
 
-    .add_event::<ScoreEvent>()
-    .add_event::<LifeEvent>()
+    .add_message::<ScoreMessage>()
+    .add_message::<LifeEvent>()
     .add_systems(OnEnter(GameState::GameInit), create_player)
     .add_systems(OnEnter(GameState::Alive), create_ship)
     .add_systems(
@@ -55,18 +55,18 @@ pub struct Player {
   pub score: u32,
 }
 
-#[derive(Event)]
-pub struct ScoreEvent{
+#[derive(Message)]
+pub struct ScoreMessage{
   score:u32,
 }
 
-impl ScoreEvent{
+impl ScoreMessage{
   pub fn new(score:u32)->Self{
     Self{ score }
   }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct LifeEvent{
   pub lives:u32,
 }
@@ -97,9 +97,9 @@ struct FlameMarker;
 
 fn update_score(
   mut player: Single<&mut Player>,
-  mut ev_score_reader:EventReader<ScoreEvent>
+  mut msg_score_reader:MessageReader<ScoreMessage>
 ){
-  for score_event in ev_score_reader.read(){
+  for score_event in msg_score_reader.read(){
     player.score += score_event.score;
   }
 }
@@ -108,11 +108,11 @@ fn check_player_health(
   query: Query<(&Health, &Velocity, &GlobalTransform),With<PlayerShip>>,
   player: Single<&Player>,
   mut next_state: ResMut<NextState<GameState>>,
-  mut ev_effect_writer:EventWriter<EffectSpriteEvent>,
+  mut ev_effect_writer:MessageWriter<EffectSpriteMessage>,
 ) {
   for (health, velocity, transform) in query {
     if health.value <= 0. {
-      ev_effect_writer.write(EffectSpriteEvent::new(transform.translation(), 16., velocity.0, EffectSpriteType::Splosion));
+      ev_effect_writer.write(EffectSpriteMessage::new(transform.translation(), 16., velocity.0, EffectSpriteType::Splosion));
       info!("Player dead");
       if player.lives > 0 {
         next_state.set(GameState::Dead);
@@ -237,13 +237,13 @@ fn update_shield(
 
 fn update_player_movement(
   //mut commands:Commands,
-  mut ev_input_movement_event: EventReader<InputMovementEvent>,
+  mut ev_input_movement_event: EventReader<InputMovementMessage>,
   ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<PlayerShip>>,
   flame_visibility: Single<&mut Visibility, With<FlameMarker>>,
 ) {
   let (transform, mut acceleration, mut rotation) = ship.into_inner();
   let mut flame = flame_visibility.into_inner();
-  for InputMovementEvent { direction } in ev_input_movement_event.read() {
+  for InputMovementMessage { direction } in ev_input_movement_event.read() {
     rotation.y = direction.x * PLAYER_ROTATION_SPEED;
     acceleration.acceleration = transform.forward() * ACCELERATION_MULTIPIER * direction.y.max(0.);
     if direction.y > 0.{
@@ -268,11 +268,11 @@ fn animate_flame(
 
 
 fn update_player_action(
-  mut ev_input_trigger_event: EventReader<InputTriggerEvent>,
+  mut ev_input_trigger_event: EventReader<InputTriggerMessage>,
   ship: Single<&mut PlayerShip>,
 ) {
   let mut player = ship.into_inner();
-  for InputTriggerEvent { action, input_type } in ev_input_trigger_event.read() {
+  for InputTriggerMessage { action, input_type } in ev_input_trigger_event.read() {
     if *action == InputEventAction::Shoot {
       player.shoot = *input_type == InputEventType::Pressed;
     }
@@ -285,7 +285,7 @@ fn update_player_action(
 fn player_shoot(
   query: Single<(Entity, &mut PlayerShip, &GlobalTransform, &Velocity)>,
   time: Res<Time>,
-  mut ev_shoot_event: EventWriter<ShootEvent>,
+  mut ev_shoot_event: MessageWriter<ShootMessage>,
 ) {
   let (player_entity, mut player, transform, velocity) = query.into_inner();
 
@@ -294,7 +294,7 @@ fn player_shoot(
   if player.next_shoot_time < 0. {
     if player.shoot {
       let forward = transform.forward();
-      ev_shoot_event.write(ShootEvent::new(
+      ev_shoot_event.write(ShootMessage::new(
         true,
         transform.translation() + (forward * PLAYER_BULLET_FORWARD_OFFSET),
         (forward * PLAYER_BULLET_VELOCITY) + velocity.0,
