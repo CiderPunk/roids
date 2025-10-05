@@ -161,7 +161,7 @@ fn create_ship(
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
   mut player: Single<&mut Player>,
-  mut ev_lives_writer: EventWriter<LifeEvent>,
+  mut lives_writer: MessageWriter<LifeEvent>,
 ) {
 
 
@@ -169,7 +169,7 @@ fn create_ship(
     return;
   }
   player.lives -= 1;
-  ev_lives_writer.write(LifeEvent::new(player.lives));
+  lives_writer.write(LifeEvent::new(player.lives));
   info!("Create ship");
 
 commands.spawn((
@@ -237,13 +237,13 @@ fn update_shield(
 
 fn update_player_movement(
   //mut commands:Commands,
-  mut ev_input_movement_event: EventReader<InputMovementMessage>,
+  mut input_movement_reader: MessageReader<InputMovementMessage>,
   ship: Single<(&GlobalTransform, &mut Acceleration, &mut Rotation), With<PlayerShip>>,
   flame_visibility: Single<&mut Visibility, With<FlameMarker>>,
 ) {
   let (transform, mut acceleration, mut rotation) = ship.into_inner();
   let mut flame = flame_visibility.into_inner();
-  for InputMovementMessage { direction } in ev_input_movement_event.read() {
+  for InputMovementMessage { direction } in input_movement_reader.read() {
     rotation.y = direction.x * PLAYER_ROTATION_SPEED;
     acceleration.acceleration = transform.forward() * ACCELERATION_MULTIPIER * direction.y.max(0.);
     if direction.y > 0.{
@@ -268,11 +268,11 @@ fn animate_flame(
 
 
 fn update_player_action(
-  mut ev_input_trigger_event: EventReader<InputTriggerMessage>,
+  mut input_trigger_reader: MessageReader<InputTriggerMessage>,
   ship: Single<&mut PlayerShip>,
 ) {
   let mut player = ship.into_inner();
-  for InputTriggerMessage { action, input_type } in ev_input_trigger_event.read() {
+  for InputTriggerMessage { action, input_type } in input_trigger_reader.read() {
     if *action == InputEventAction::Shoot {
       player.shoot = *input_type == InputEventType::Pressed;
     }

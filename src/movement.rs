@@ -9,7 +9,7 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<PhysicsMessage>()
+      .add_message::<PhysicsMessage>()
       .add_systems(
       Update,
       (sum_physics_events, update_acceleration, update_velocity, apply_damping, update_position, update_rotation)
@@ -54,10 +54,10 @@ impl PhysicsObject{
 }
 
 fn sum_physics_events(
-  mut ev_physics_reader: EventReader<PhysicsMessage>,
+  mut physics_reader: MessageReader<PhysicsMessage>,
   mut entity_query:Query<&mut PhysicsObject>,
 ){
-  for PhysicsMessage {entity, force} in ev_physics_reader.read(){
+  for PhysicsMessage {entity, force} in physics_reader.read(){
     let Ok(mut physics) = entity_query.get_mut(*entity) else{ continue; };
     physics.force += force;
   }

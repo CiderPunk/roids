@@ -20,19 +20,19 @@ impl Plugin for GameUiPlugin{
 fn update_score(
   player:Single<&Player>,
   mut text:Single<&mut Text, With<ScoreDisplay>>,
-  mut ev_score_reader: EventReader<ScoreMessage>,
+  mut score_reader: MessageReader<ScoreMessage>,
 ){
-  if !ev_score_reader.is_empty(){
+  if !score_reader.is_empty(){
     text.0 = format!("{:}", player.score);
-    ev_score_reader.clear();
+    score_reader.clear();
   }
 }
 
 fn update_lives(
-  mut ev_lives_reader: EventReader<LifeEvent>,
+  mut lives_reader: MessageReader<LifeEvent>,
   mut query:Query<(&LifeIcon, &mut Visibility)>
 ){
-  for life_event in ev_lives_reader.read(){
+  for life_event in lives_reader.read(){
     let lives = life_event.lives;
     for (life_icon, mut visibility) in query.iter_mut(){
 

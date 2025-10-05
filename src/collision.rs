@@ -45,11 +45,11 @@ fn _add_collision_shell(
 }
 
 fn shield_collisions(
-  player: Query<(Entity, &Collider, &GlobalTransform, &Shield)>,
+  player: Query<( &Collider, &GlobalTransform, &Shield)>,
   baddies: Query<(Entity, &Collider, &GlobalTransform),(With<PhysicsObject>, Without<PlayerShip>, Without<Shield>)>,
-  mut ev_physics_writer: EventWriter<PhysicsMessage>,
+  mut mw_physics: MessageWriter<PhysicsMessage>,
 ) {
-  for (player_entity, player_collider, player_transform, shield) in player.iter() {
+  for (player_collider, player_transform, shield) in player.iter() {
     for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
       let dist_squared = player_transform
         .translation()
@@ -58,7 +58,7 @@ fn shield_collisions(
       if dist_squared < allowed_dist * allowed_dist {
         //info!("ent collision {:?} {:?}", player_entity, enemy_entity);
         let launch_vector = (enemy_transform.translation() - player_transform.translation()).normalize();
-        ev_physics_writer.write(PhysicsMessage::new(enemy_entity, launch_vector * shield.repulse_force ));
+        mw_physics.write(PhysicsMessage::new(enemy_entity, launch_vector * shield.repulse_force ));
       }
     }
   }
@@ -67,7 +67,7 @@ fn shield_collisions(
 fn detect_player_collisions(
   player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip>, Without<Invulnerable>)>,
   baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
-  mut ev_health_writer: EventWriter<HealthMessage>,
+  mut health_writer: MessageWriter<HealthMessage>,
 ) {
   for (player_entity, player_collider, player_transform) in player.iter() {
     for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
@@ -77,12 +77,12 @@ fn detect_player_collisions(
       let allowded_dist = player_collider.radius + enemy_collider.radius;
       if dist_squared < allowded_dist * allowded_dist {
         //info!("ent collision {:?} {:?}", player_entity, enemy_entity);
-        ev_health_writer.write(HealthMessage::new(
+        health_writer.write(HealthMessage::new(
           player_entity,
           Some(enemy_entity),
           enemy_collider.damage,
         ));
-        ev_health_writer.write(HealthMessage::new(
+        health_writer.write(HealthMessage::new(
           enemy_entity,
           Some(player_entity),
           player_collider.damage,
@@ -96,8 +96,8 @@ fn detect_bullet_collisions(
   bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
   players: Query<(Entity, &Collider, &GlobalTransform), With<PlayerShip>>,
   baddies: Query<(Entity, &Collider, &GlobalTransform), (Without<PlayerShip>, Without<Shield>)>,
-  mut ev_health_writer: EventWriter<HealthMessage>,
-  mut ev_bullet_hit_writer: EventWriter<BulletHitMessage>,
+  mut health_writer: MessageWriter<HealthMessage>,
+  mut bullet_hit_writer: MessageWriter<BulletHitMessage>,
 ) {
   for (bullet_entity, bullet, bullet_transform) in bullets.iter() {
     if bullet.is_players {
@@ -107,8 +107,8 @@ fn detect_bullet_collisions(
           .distance_squared(target_transform.translation());
         if dist_squared < collider.radius * collider.radius {
           //info!("bullet hit ent {:?}", target_entity);
-          ev_health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
-          ev_bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
+          health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
+          bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
         }
       }
     } else {
@@ -118,8 +118,8 @@ fn detect_bullet_collisions(
           .distance_squared(target_transform.translation());
         if dist_squared < collider.radius * collider.radius {
           //info!("bullet hit player {:?}", target_entity);
-          ev_health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
-          ev_bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
+          health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
+          bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
         }
       }
     }

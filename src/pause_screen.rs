@@ -22,10 +22,10 @@ impl Plugin for PauseScreenPlugin {
 struct PauseScreenElement;
 
 fn update_pause_screen(
-  mut ev_input_event: EventReader<InputTriggerMessage>,
+  mut input_reader: MessageReader<InputTriggerMessage>,
   mut next_state: ResMut<NextState<PauseState>>,
 ) {
-  for InputTriggerMessage { action, input_type } in ev_input_event.read() {
+  for InputTriggerMessage { action, input_type } in input_reader.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
       info!("Resuming game");
       next_state.set(PauseState::Running);

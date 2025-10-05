@@ -3,23 +3,21 @@ name = "roids"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies.bevy]
-version="0.17.2"
-
 [features]
 watcher = [
   "bevy/file_watcher",
   "bevy/embedded_watcher",
 ]
 
-
 [dependencies]
+bevy = { version = "0.17.2", features = [
+    "bevy_asset",
+] }
 rand = "0.9.2"
 getrandom = { version = "0.3", features = ["wasm_js"] }
-bevy_common_assets = "0.13.0"
-serde = "1.0.228"
-serde_json = "1.0.145"
-
+bevy_common_assets= {version = "0.14.0", features = ["json"]}
+serde = "1"
+serde_json = "1"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

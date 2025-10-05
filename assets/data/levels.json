@@ -1,0 +1,26 @@
+{
+  "levels":[
+    { 
+      "min_level_time":2.2,
+      "waves":[
+        {
+          "start":0.5,
+          "cycle_time":2.0,
+          "wave_size":2,
+          "cycles":2
+        }
+      ] 
+    },
+    {
+      "min_level_time":5.2,
+      "waves":[
+        {
+          "start":0.5,
+          "cycle_time":2.0,
+          "wave_size":2,
+          "cycles":2
+        }
+      ]
+    }
+  ]
+}

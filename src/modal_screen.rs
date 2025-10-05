@@ -25,7 +25,7 @@ const DEATH_EUPHEMISMS:[&'static str;8] = [
   "You have Expired",
   "You've 'Sploded",
   "You've Vapourised", 
-  "You have ceased to be'", 
+  "You have ceased to be", 
 ];
 
 pub struct ModalScreenPlugin;
@@ -290,7 +290,7 @@ fn show_start_screen(
 }
 
 fn update_modal_screen(
-  mut ev_input_event: EventReader<InputTriggerMessage>,
+  mut input_reader: MessageReader<InputTriggerMessage>,
   state: Res<State<GameState>>,
   mut next_state: ResMut<NextState<GameState>>,
   mut next_modal_state: ResMut<NextState<ModalState>>,
@@ -299,7 +299,7 @@ fn update_modal_screen(
 ) {
   modal_timer.0.tick(time.delta());
   let mut trigger = false;
-  for InputTriggerMessage { action, input_type } in ev_input_event.read() {
+  for InputTriggerMessage { action, input_type } in input_reader.read() {
     if *input_type == InputEventType::Pressed && *action == InputEventAction::Shoot {
       trigger = true;
     }

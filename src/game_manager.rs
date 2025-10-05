@@ -5,10 +5,6 @@ use crate::{
 };
 use crate::level::LevelConfiguration;
 
-
-//time before which it is not possible to complete a level - give roids time to get on screen
-const LEVEL_START_TIME: f32 = 5.0;
-
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum GameState {
   #[default]

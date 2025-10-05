@@ -23,7 +23,7 @@ mod level;
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, starfield::StarfieldPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, level::LevelPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, starfield::StarfieldPlugin
 };
 
 
@@ -77,6 +77,7 @@ pub fn run_game() {
       EffectSpritePlugin,
       GameUiPlugin,
       ShadersPlugin,
+      LevelPlugin,
     ))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
@@ -100,10 +101,10 @@ fn _test_sphere(
 }
 
 fn shutdown_detect(
-  mut ev_windows_close_reader: EventReader<WindowCloseRequested>,
+  mut mr_windows_close: MessageReader<WindowCloseRequested>,
   mut next_state:ResMut<NextState<GameState>>,
 ) {
-  for _ in ev_windows_close_reader.read() {
+  for _ in mr_windows_close.read() {
     info!("shutting down");
     next_state.set(GameState::Shutdown);
 
