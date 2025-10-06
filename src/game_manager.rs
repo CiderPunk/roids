@@ -1,7 +1,7 @@
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::LEVEL_DATA, roid::Roid, scheduling::GameSchedule
+  asset_loader::{AssetState, LevelHandle, SceneAssets}, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::{LevelCollectionData, LevelData, Levels, LEVEL_DATA}, roid::Roid, scheduling::GameSchedule
 };
 use crate::level::LevelConfiguration;
 
@@ -33,14 +33,7 @@ pub enum PauseState {
 pub struct CurrentLevelIndex(pub usize);
 
 #[derive(Resource, Default)]
-pub struct CurrentLevel(pub Option<LevelConfiguration>);
-
-
-
-#[derive(Resource)]
-pub struct LevelData(Vec<LevelConfiguration>);
-
-
+pub struct CurrentLevel(pub Option<LevelData>);
 
 #[derive(Component)]
 pub struct GameEntity;
@@ -55,7 +48,7 @@ impl Plugin for GameManagerPlugin {
       .init_resource::<CurrentLevel>()
       .insert_resource(CurrentLevelIndex(0))
       .insert_resource(GameManager{ level_time: Stopwatch::new(), level_test_timer: Timer::from_seconds(0.5, TimerMode::Repeating)})
-      .insert_resource(LevelData(LEVEL_DATA.to_vec()))
+     // .insert_resource(LevelData(LEVEL_DATA.to_vec()))
       .add_systems(OnEnter(AssetState::Ready), start_screen)
       .add_systems(OnEnter(GameState::GameInit), init_game)
       .add_systems(OnEnter(GameState::LevelInit), init_level)
@@ -76,14 +69,9 @@ fn clean_game(mut commands: Commands, query: Query<Entity, With<GameEntity>>) {
 
 fn init_game(
   mut next_state: ResMut<NextState<GameState>>,
-  mut current_level_index:ResMut<CurrentLevelIndex>,
-  current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
+  mut current_level_index:ResMut<CurrentLevelIndex>
 ) {
-
   current_level_index.0 = 0;
-  select_level(0, current_level, levels);
-  info!("Game initialized");
   next_state.set(GameState::LevelInit);
 }
 
@@ -100,20 +88,10 @@ fn init_level(
 
 fn level_end(
   mut current_level_index:ResMut<CurrentLevelIndex>,
-  current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
 ) {
   current_level_index.0 += 1;
-  select_level(current_level_index.0, current_level, levels);
 }
 
-fn select_level(
-  index:usize,
-  mut current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
-){
-  current_level.0 = Some(levels.0[index]);
-}
 
 fn start_screen(mut next_state: ResMut<NextState<GameState>>) {
   info!("Switching to start screen");

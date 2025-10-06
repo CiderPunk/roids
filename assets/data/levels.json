@@ -8,8 +8,10 @@
           "wave_type":"Roid",
           "first_spawn":0.5,
           "cycle_time":2.0,
+          "cycles":2,
           "wave_size":2,
-          "cycles":2
+          "min_speed": 30.0,
+          "max_speed": 40.0
         }
       ] 
     },
@@ -21,8 +23,10 @@
           "wave_type":"Roid",
           "first_spawn":0.5,
           "cycle_time":2.0,
+          "cycles":2,
           "wave_size":2,
-          "cycles":2
+          "min_speed": 30.0,
+          "max_speed": 40.0
         }
       ]
     }
