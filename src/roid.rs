@@ -16,10 +16,7 @@ enum RoidSize {
 }
 
 
-const ROID_COUNT: i32 = 4;
 const ROID_SPAWN_DISTANCE: f32 = 150.0;
-const ROID_LOW_SPEED: f32 = 4.;
-const ROID_HIGH_SPEED: f32 = 20.;
 
 const ROID_MAX_SPEED: f32 = 26.;
 
@@ -66,9 +63,9 @@ pub struct Roid(RoidSize);
 fn check_asteroid_health(
   mut commands: Commands,
   query: Query<(&Roid, &Health, &GlobalTransform, &Velocity, &BoundsWarp)>,
-  mut ev_effect_writer: EventWriter<EffectSpriteMessage>,
+  mut effect_writer: MessageWriter<EffectSpriteMessage>,
   scene_assets: Res<SceneAssets>,
-  mut ev_score_writer:EventWriter<ScoreMessage>,
+  mut score_writer:MessageWriter<ScoreMessage>,
 ) {
   let mut rng = rand::rng();
   for (roid, health, transform, velocity, orig_bounds_warp) in query.iter() {
@@ -76,7 +73,7 @@ fn check_asteroid_health(
       continue;
     }
 
-    ev_score_writer.write(ScoreMessage::new(match roid.0 {
+    score_writer.write(ScoreMessage::new(match roid.0 {
         RoidSize::Large => 50,
         RoidSize::Medium => 20,
         RoidSize::Small => 10,
@@ -87,7 +84,7 @@ fn check_asteroid_health(
       RoidSize::Medium => 12.,
       RoidSize::Small => 8.,
     };
-    ev_effect_writer.write(EffectSpriteMessage::new(
+    effect_writer.write(EffectSpriteMessage::new(
       transform.translation(),
       effect_scale,
       velocity.0,
@@ -188,7 +185,7 @@ fn spawn_roids(
   if spawn_timer.count == 0 { return; }
   
   spawn_timer.timer.tick(time.delta());
-  if !spawn_timer.timer.finished() { return; }
+  if !spawn_timer.timer.is_finished() { return; }
 
   //spawn a new wave
   spawn_timer.count-=1;

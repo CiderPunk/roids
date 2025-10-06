@@ -5,7 +5,7 @@ use crate::scheduling::GameSchedule;
 pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
-    app.add_event::<HealthMessage>().add_systems(
+    app.add_message::<HealthMessage>().add_systems(
       Update,
       (
         apply_health_changes.in_set(GameSchedule::HealthAdjust),

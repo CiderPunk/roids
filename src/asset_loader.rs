@@ -1,7 +1,8 @@
 use bevy::{asset::LoadState, prelude::*};
+use bevy_common_assets::json::JsonAssetPlugin;
+use crate::level::LevelCollectionData;
 
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
-const BULLET_SIZE: f32 = 0.5;
 //const SHIELD_SIZE: f32 = 3.;
 const SHIELD_SIZE: f32 = 1.0;
 
@@ -27,10 +28,15 @@ pub struct SceneAssets {
   pub ship_shield: Handle<Mesh>,
   pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
+  pub level_data: Handle<LevelCollectionData>,
 }
 
 #[derive(Resource)]
 struct GameFont(Handle<Font>);
+
+#[derive(Resource, Clone)]
+pub struct LevelHandle(Handle<LevelCollectionData>);
+
 
 #[derive(Resource)]
 struct RoidsScene(Handle<Gltf>);
@@ -40,6 +46,7 @@ pub struct AssetLoaderPlugin;
 impl Plugin for AssetLoaderPlugin {
   fn build(&self, app: &mut App) {
     app
+      .add_plugins(JsonAssetPlugin::<LevelCollectionData>::new(&["levels.json"]))
       .insert_resource(AssetsLoading::default())
       .init_resource::<SceneAssets>()
       .init_state::<AssetState>()
@@ -70,6 +77,12 @@ fn load_assets(
   let ship_icon = asset_server.load("ui/ship_icon.png");
   loading.0.push(ship_icon.clone().untyped());
   scene_assets.ship_icon = ship_icon;
+
+  let level:Handle<LevelCollectionData> = asset_server.load("data/levels.json");
+  loading.0.push(level.clone().untyped());
+  commands.insert_resource(LevelHandle(level));
+  
+  //scene_assets.level_data = level;
 }
 
 fn check_load_state(
@@ -98,7 +111,7 @@ fn extract_assets(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
   game_font: Res<GameFont>,
-
+  level_data: Res<LevelHandle>,
   mut next_state: ResMut<NextState<AssetState>>,
 ) {
   let Some(gltf) = gltf_assets.get(&roids_scene.0) else {
@@ -134,5 +147,6 @@ fn extract_assets(
     ..default()
   });
 
+  scene_assets.level_data = level_data.0.clone();
   next_state.set(AssetState::Ready);
 }

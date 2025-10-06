@@ -65,8 +65,9 @@ impl Plugin for GameInputPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<KeyBindings>()
-      .add_event::<InputMovementMessage>()
-      .add_event::<InputTriggerMessage>()
+      .add_message::<InputMovementMessage>()
+      .init_resource::<KeyBindings>()
+      .add_message::<InputTriggerMessage>()
       .add_systems(Startup, init_input_resources)
       .add_systems(Update, (read_keys, read_touch, read_gamepads).in_set(GameSchedule::ReadUserInput));
   }
@@ -116,29 +117,29 @@ fn init_input_resources(mut commands: Commands) {
 
 fn read_gamepads(
   gamepads: Query<&Gamepad>,
-  mut ev_movement_event: EventWriter<InputMovementMessage>,
-  mut ev_trigger_event: EventWriter<InputTriggerMessage>,
+  mut mw_movement_event: MessageWriter<InputMovementMessage>,
+  mut mw_trigger_event: MessageWriter<InputTriggerMessage>,
   mut last_dir: Local<Vec2>,
 ) {
   for gamepad in &gamepads {
     if gamepad.just_pressed(GamepadButton::East) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      mw_trigger_event.write(InputTriggerMessage::new(
         InputEventAction::Shield,
         InputEventType::Pressed,
       ));
     } else if gamepad.just_released(GamepadButton::East) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      mw_trigger_event.write(InputTriggerMessage::new(
         InputEventAction::Shield,
         InputEventType::Released,
       ));
     }
     if gamepad.just_pressed(GamepadButton::South) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      mw_trigger_event.write(InputTriggerMessage::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
       ));
     } else if gamepad.just_released(GamepadButton::South) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      mw_trigger_event.write(InputTriggerMessage::new(
         InputEventAction::Shoot,
         InputEventType::Released,
       ));
@@ -166,15 +167,15 @@ fn read_gamepads(
     
     if *last_dir != dir || dir.length_squared() > 0.1 {
       *last_dir = dir;
-      ev_movement_event.write(InputMovementMessage::new(dir));
+      mw_movement_event.write(InputMovementMessage::new(dir));
     }
   }
 }
 
 fn read_touch(
   touches: Res<Touches>,
-  mut ev_movement_event: EventWriter<InputMovementMessage>,
-  mut ev_trigger_event: EventWriter<InputTriggerMessage>,
+  mut movement_writer: MessageWriter<InputMovementMessage>,
+  mut trigger_writer: MessageWriter<InputTriggerMessage>,
   mut touch_tracker: ResMut<TouchResource>,
 
 ) {
@@ -187,7 +188,7 @@ fn read_touch(
     } else {
       //second is our shoot action
       
-      ev_trigger_event.write(InputTriggerMessage::new(
+      trigger_writer.write(InputTriggerMessage::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
       ));
@@ -201,7 +202,7 @@ fn read_touch(
       touch_tracker.move_finger = None;
     } else {
       //or stop firing
-      ev_trigger_event.write(InputTriggerMessage::new(
+      trigger_writer.write(InputTriggerMessage::new(
         InputEventAction::Shoot,
         InputEventType::Released,
       ));
@@ -216,7 +217,7 @@ fn read_touch(
         found = true;
         let diff = touch_tracker.last - touch.position();
         if diff.length_squared() > 0.5 {
-          ev_movement_event.write(InputMovementMessage::new(diff * 2.));
+          movement_writer.write(InputMovementMessage::new(diff * 2.));
         }
         touch_tracker.last = touch.position();
       }
@@ -265,8 +266,8 @@ fn read_mouse(
 
 fn read_keys(
   keyboard_input: Res<ButtonInput<KeyCode>>,
-  mut ev_movement_event: EventWriter<InputMovementMessage>,
-  mut ev_trigger_event: EventWriter<InputTriggerMessage>,
+  mut movement_writer: MessageWriter<InputMovementMessage>,
+  mut trigger_writer: MessageWriter<InputTriggerMessage>,
   key_binds: Res<KeyBindings>,
   mut last_dir: Local<Vec2>,
 ) {
@@ -287,19 +288,19 @@ fn read_keys(
 
   if dir != *last_dir || dir != Vec2::ZERO {
     *last_dir = dir;
-    ev_movement_event.write(InputMovementMessage::new(dir));
+    movement_writer.write(InputMovementMessage::new(dir));
   }
 
   for command in key_binds.commands.iter() {
     if keyboard_input.any_just_pressed(command.keys.clone()) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      trigger_writer.write(InputTriggerMessage::new(
         command.action.clone(),
         InputEventType::Pressed,
       ));
     }
 
     if keyboard_input.any_just_released(command.keys.clone()) {
-      ev_trigger_event.write(InputTriggerMessage::new(
+      trigger_writer.write(InputTriggerMessage::new(
         command.action.clone(),
         InputEventType::Released,
       ));
