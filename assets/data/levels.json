@@ -1,10 +1,12 @@
 {
   "levels":[
     { 
+      "name":"Level 1 - lets start easy",
       "min_level_time":2.2,
       "waves":[
         {
-          "start":0.5,
+          "wave_type":"Roid",
+          "first_spawn":0.5,
           "cycle_time":2.0,
           "wave_size":2,
           "cycles":2
@@ -12,10 +14,12 @@
       ] 
     },
     {
+      "name":"Level 2 - A little trickier",
       "min_level_time":5.2,
       "waves":[
         {
-          "start":0.5,
+          "wave_type":"Roid",
+          "first_spawn":0.5,
           "cycle_time":2.0,
           "wave_size":2,
           "cycles":2

@@ -87,6 +87,7 @@ fn init_game(
   next_state.set(GameState::LevelInit);
 }
 
+
 fn init_level(
   mut next_state: ResMut<NextState<GameState>>,
   mut game_manager:ResMut<GameManager>,
@@ -95,6 +96,7 @@ fn init_level(
   game_manager.level_time.reset();
   next_state.set(GameState::Alive);
 }
+
 
 fn level_end(
   mut current_level_index:ResMut<CurrentLevelIndex>,

@@ -9,10 +9,6 @@ impl Plugin for LevelPlugin{
   }
 }
 
-
-
-
-
 #[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
 pub struct LevelConfiguration{
   pub wave_size:u32,
@@ -38,6 +34,7 @@ pub struct LevelCollectionData{
 
 #[derive(serde::Deserialize, Asset, TypePath)]
 pub struct LevelData{
+  name:String,
   min_level_time:f32,
   waves:Vec<WaveData>,
 }
@@ -45,8 +42,15 @@ pub struct LevelData{
 
 #[derive(serde::Deserialize, Asset, TypePath)]
 pub struct WaveData{
-  start:f32,
+  wave_type:WaveType,
+  first_spawn:f32,
   cycle_time:f32,
   cycles:u32,
   wave_size:u32,
+}
+
+#[derive(serde::Deserialize, Asset, TypePath)]
+enum WaveType{
+  Roid,
+  Ufo,
 }
