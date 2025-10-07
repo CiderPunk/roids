@@ -2,7 +2,7 @@ use std::clone;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::{AssetState, LevelHandle}, game_manager::{CurrentLevelIndex, GameEntity, GameState}, movement::Velocity};
+use crate::{asset_loader::{AssetState, LevelHandle}, game_manager::{CurrentLevelIndex, GameEntity, GameState}, movement::Velocity, scheduling::GameSchedule};
 
 
 pub struct LevelPlugin;
@@ -15,11 +15,40 @@ impl Plugin for LevelPlugin{
       .init_resource::<Levels>()
       .init_resource::<CurrentLevel>()
       .add_systems(OnExit(AssetState::Loading), extract_levels)
-      .add_systems(OnEnter(GameState::LevelInit), init_level);
+      .add_systems(OnEnter(GameState::LevelInit), init_level)
+      .add_systems(Update, update_spawners.in_set(GameSchedule::EntityUpdates).run_if(in_state(GameState::Alive)));
 
   }
 }
 
+
+fn update_spawners(
+  mut query:Query<(Entity, &mut WaveSpawner)>,
+  mut spawn_write:MessageWriter<SpawnMessage>,
+  time:Res<Time>,
+  mut commands:Commands,
+){
+  for (entity, mut spawner) in query{
+    spawner.start_time.tick(time.delta());
+    if spawner.start_time.is_finished(){
+      spawner.cycle_time.tick(time.delta());
+      if spawner.start_time.just_finished() || spawner.cycle_time.just_finished(){
+        //spawn a wave
+        spawner.wave_count -= 1;
+        if spawner.wave_count < 1{
+          //despawn spawner
+          commands.entity(entity).despawn();
+        }
+
+
+        
+
+
+
+      }
+    }
+  }
+}
 
 #[derive(Resource, Default)]
 pub struct CurrentLevel(pub Option<LevelData>);
@@ -84,7 +113,7 @@ fn extract_levels(
   mut levels: ResMut<Levels>,
 ){
   if let Some(level_data) = level_assets.get(level_handle.0.id()){
-    levels.0.clone_from_slice(&level_data.levels);
+    levels.0 = &level_data.levels.to_vec();
   }
 }
 
