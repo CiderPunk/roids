@@ -31,8 +31,8 @@ pub struct LevelCollectionData{
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone)]
 pub struct LevelData{
-  name:String,
-  min_level_time:f32,
+  pub name:String,
+  pub min_level_time:f32,
   waves:Vec<WaveData>,
 }
 

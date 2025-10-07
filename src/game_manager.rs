@@ -1,7 +1,7 @@
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, roid::Roid, scheduling::GameSchedule
+  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::CurrentLevel, roid::Roid, scheduling::GameSchedule
 };
 
 
@@ -32,8 +32,7 @@ pub enum PauseState {
 #[derive(Resource, Default)]
 pub struct CurrentLevelIndex(pub usize);
 
-#[derive(Resource, Default)]
-pub struct CurrentLevel(pub Option<LevelData>);
+
 
 #[derive(Component)]
 pub struct GameEntity;
@@ -114,10 +113,10 @@ fn check_game_state(
   mut next_state: ResMut<NextState<GameState>>,
 ){
 
-  let Some(level) = current_level.0 else{ return; };
+  let Some(level) = current_level.0.clone() else{ return; };
 //TODO move this to level maybe?
   game_manager.level_time.tick(time.delta());
-  if game_manager.level_time.elapsed_secs() < level..time_before_comnplete { return; }
+  if game_manager.level_time.elapsed_secs() < level.min_level_time { return; }
 
   game_manager.level_test_timer.tick(time.delta());
   
