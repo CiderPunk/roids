@@ -1,9 +1,9 @@
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::{AssetState, LevelHandle, SceneAssets}, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::{LevelCollectionData, LevelData, Levels, LEVEL_DATA}, roid::Roid, scheduling::GameSchedule
+  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, roid::Roid, scheduling::GameSchedule
 };
-use crate::level::LevelConfiguration;
+
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum GameState {
@@ -107,14 +107,17 @@ struct GameManager{
 
 
 fn check_game_state(
-  current_level:Res<CurrentLevelIndex>,
+  current_level:Res<CurrentLevel>,
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
   roid_query:Query<&BoundsWarp, With<Roid>>,
   mut next_state: ResMut<NextState<GameState>>,
 ){
+
+  let Some(level) = current_level.0 else{ return; };
+//TODO move this to level maybe?
   game_manager.level_time.tick(time.delta());
-  if game_manager.level_time.elapsed_secs() < LEVEL_DATA[current_level.0].time_before_comnplete { return; }
+  if game_manager.level_time.elapsed_secs() < level..time_before_comnplete { return; }
 
   game_manager.level_test_timer.tick(time.delta());
   

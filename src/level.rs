@@ -13,29 +13,16 @@ impl Plugin for LevelPlugin{
       .init_asset::<LevelCollectionData>()
       .add_message::<SpawnMessage>()
       .init_resource::<Levels>()
+      .init_resource::<CurrentLevel>()
       .add_systems(OnExit(AssetState::Loading), extract_levels)
       .add_systems(OnEnter(GameState::LevelInit), init_level);
 
   }
 }
 
-#[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
-pub struct LevelConfiguration{
-  pub wave_size:u32,
-  pub wave_count:u32,
-  pub wave_time:f32,
-  pub max_speed:f32,
-  pub speed_variance:f32,
-  pub time_before_comnplete:f32,
-}
 
-pub const LEVEL_DATA: [LevelConfiguration; 4] =[
-  LevelConfiguration{ wave_size: 2, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete:5. },
-  LevelConfiguration{ wave_size: 1, wave_count: 10, wave_time: 1., max_speed: 40., speed_variance: 10., time_before_comnplete:5. },
-  LevelConfiguration{ wave_size: 10, wave_count: 1, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete:5. },
-  LevelConfiguration{ wave_size: 4, wave_count: 2, wave_time: 10., max_speed: 30., speed_variance: 15., time_before_comnplete: 5.},
-];
-
+#[derive(Resource, Default)]
+pub struct CurrentLevel(pub Option<LevelData>);
 
 #[derive(serde::Deserialize, Asset, TypePath)]
 pub struct LevelCollectionData{
@@ -64,16 +51,18 @@ pub struct WaveData{
 }
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone)]
-enum SpawnType{
+pub enum SpawnType{
   Roid,
+  RoidSmall,
+  RoidMedium,
   Ufo,
 }
 
 #[derive(Message)]
 pub struct SpawnMessage{
-  spawn_type:SpawnType,
-  position:Transform,
-  velocity:Velocity,
+  pub spawn_type:SpawnType,
+  pub position:Vec3,
+  pub velocity:Vec3,
 }
 
 #[derive(Component)]
@@ -102,10 +91,14 @@ fn extract_levels(
 
 fn init_level(
   current_level_index:Res<CurrentLevelIndex>,
+  mut current_level:ResMut<CurrentLevel>,
   levels:Res<Levels>,
   mut commands:Commands,
 ){
-  let level = levels.0[current_level_index.0].clone();
+  let level = levels.0[current_level_index.0 % levels.0.len()].clone();
+  current_level.0 = Some(level.clone());
+
+
   //spawn spawners...
   for wave in level.waves.iter(){
     commands.spawn((
