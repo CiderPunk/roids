@@ -5,8 +5,9 @@
       "min_level_time":2.2,
       "waves":[
         {
+          "must_complete":true,
           "wave_type":"Roid",
-          "first_spawn":0.5,
+          "first_spawn":5.0,
           "cycle_time":2.0,
           "cycles":2,
           "wave_size":2,
@@ -20,6 +21,8 @@
       "min_level_time":5.2,
       "waves":[
         {
+          
+          "must_complete":true,
           "wave_type":"Roid",
           "first_spawn":0.5,
           "cycle_time":2.0,

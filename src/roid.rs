@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use rand::Rng;
@@ -117,16 +117,18 @@ fn check_asteroid_health(
         next_size = RoidSize::Small;
         mass = ROID_SMALL_MASS;
       }
-    }
+  }
 
-    for _ in 0..2 {
-      let rotation = Vec3::new(
-        rng.random_range(-1. ..1.),
-        rng.random_range(-1. ..1.),
-        rng.random_range(-1. ..1.),
-      );
+  for _ in 0..2 {
+    let rotation = Vec3::new(
+      rng.random_range(-1. ..1.),
+      rng.random_range(-1. ..1.),
+      rng.random_range(-1. ..1.),
+    );
 
     commands.spawn((
+        LevelEntity,
+        LevelTarget,
         GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(orig_bounds_warp.0),
@@ -198,7 +200,9 @@ fn spawn_roids(
     );
 
     commands.spawn((
+      LevelTarget,
       GameEntity,
+      LevelEntity,
       Roid(RoidSize::Large),
       BoundsWarp(false),
       Transform::from_translation(spawn.position).with_scale(ROID_LARGE_SCALE),

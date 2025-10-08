@@ -1,7 +1,7 @@
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::CurrentLevel, roid::Roid, scheduling::GameSchedule
+  asset_loader::AssetState, bounds::{Bounds, BoundsWarp}, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::CurrentLevel, roid::Roid, scheduling::GameSchedule
 };
 
 
@@ -26,8 +26,8 @@ pub enum PauseState {
   Running,
 }
 
-
-
+#[derive(Component)]
+pub struct LevelTarget;
 
 #[derive(Resource, Default)]
 pub struct CurrentLevelIndex(pub usize);
@@ -36,6 +36,9 @@ pub struct CurrentLevelIndex(pub usize);
 
 #[derive(Component)]
 pub struct GameEntity;
+
+#[derive(Component)]
+pub struct LevelEntity;
 
 pub struct GameManagerPlugin;
 
@@ -87,8 +90,14 @@ fn init_level(
 
 fn level_end(
   mut current_level_index:ResMut<CurrentLevelIndex>,
+  cleanup_query:Query<Entity, With<LevelEntity>>,
+  mut commands:Commands,
 ) {
   current_level_index.0 += 1;
+  info!("next level {}", current_level_index.0);
+  for entity in cleanup_query{
+    commands.entity(entity).try_despawn();
+  }
 }
 
 
@@ -106,24 +115,21 @@ struct GameManager{
 
 
 fn check_game_state(
-  current_level:Res<CurrentLevel>,
+  //current_level:Res<CurrentLevel>,
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
-  roid_query:Query<&BoundsWarp, With<Roid>>,
+  target_query:Query<Option<&BoundsWarp>, With<LevelTarget>>,
   mut next_state: ResMut<NextState<GameState>>,
 ){
-
-  let Some(level) = current_level.0.clone() else{ return; };
-//TODO move this to level maybe?
-  game_manager.level_time.tick(time.delta());
-  if game_manager.level_time.elapsed_secs() < level.min_level_time { return; }
-
+  //let Some(level) = current_level.0.clone() else{ return; };
   game_manager.level_test_timer.tick(time.delta());
   
   if !game_manager.level_test_timer.just_finished(){ return; }
-  for bounds in roid_query.iter(){
-    if bounds.0 { 
-      return; }
+  for bounds in target_query.iter(){
+    if bounds.is_some_and(|f| f.0) || bounds.is_none() { 
+      return; 
+    }
+    
   }
   info!("LEVEL END");
   next_state.set(GameState::LevelEnd);

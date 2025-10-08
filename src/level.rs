@@ -1,9 +1,12 @@
-use std::clone;
+use std::{clone, f32::consts::PI};
 
 use bevy::prelude::*;
+use rand::Rng;
 
-use crate::{asset_loader::{AssetState, LevelHandle}, game_manager::{CurrentLevelIndex, GameEntity, GameState}, movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::{AssetState, LevelHandle}, game_manager::{CurrentLevelIndex, GameEntity, GameState, LevelEntity, LevelTarget}, movement::Velocity, scheduling::GameSchedule};
 
+
+const ROID_SPAWN_DISTANCE: f32 = 150.0;
 
 pub struct LevelPlugin;
 
@@ -23,11 +26,12 @@ impl Plugin for LevelPlugin{
 
 
 fn update_spawners(
-  mut query:Query<(Entity, &mut WaveSpawner)>,
+  query:Query<(Entity, &mut WaveSpawner)>,
   mut spawn_write:MessageWriter<SpawnMessage>,
   time:Res<Time>,
   mut commands:Commands,
 ){
+  let mut rng = rand::rng();  
   for (entity, mut spawner) in query{
     spawner.start_time.tick(time.delta());
     if spawner.start_time.is_finished(){
@@ -35,16 +39,26 @@ fn update_spawners(
       if spawner.start_time.just_finished() || spawner.cycle_time.just_finished(){
         //spawn a wave
         spawner.wave_count -= 1;
-        if spawner.wave_count < 1{
-          //despawn spawner
-          commands.entity(entity).despawn();
+
+        for _ in [0 .. spawner.wave_data.wave_size]{
+          let angle = rng.random_range(0. ..PI * 2.);
+          let return_angle = angle + rng.random_range(-0.3..0.3);
+
+          let position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
+          let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin()) * -rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed);
+
+          spawn_write.write(SpawnMessage{ 
+            spawn_type: spawner.spawn_type.clone() , 
+            position,
+            velocity, 
+          });
         }
 
-
-        
-
-
-
+        if spawner.wave_count == 0{
+          //despawn spawner
+          commands.entity(entity).despawn();
+          info!("Despawning wave spawner");
+        }
       }
     }
   }
@@ -68,6 +82,7 @@ pub struct LevelData{
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone)]
 pub struct WaveData{
+  must_complete:Option<bool>,
   wave_type:SpawnType,
   first_spawn:f32,
   cycle_time:f32,
@@ -113,10 +128,9 @@ fn extract_levels(
   mut levels: ResMut<Levels>,
 ){
   if let Some(level_data) = level_assets.get(level_handle.0.id()){
-    levels.0 = &level_data.levels.to_vec();
+    levels.0 = level_data.levels.to_vec();
   }
 }
-
 
 fn init_level(
   current_level_index:Res<CurrentLevelIndex>,
@@ -124,13 +138,14 @@ fn init_level(
   levels:Res<Levels>,
   mut commands:Commands,
 ){
+
+
+
   let level = levels.0[current_level_index.0 % levels.0.len()].clone();
   current_level.0 = Some(level.clone());
-
-
   //spawn spawners...
   for wave in level.waves.iter(){
-    commands.spawn((
+    let mut entity = commands.spawn((
       WaveSpawner{
         spawn_type: wave.wave_type.clone(),
         start_time: Timer::from_seconds(wave.first_spawn, TimerMode::Once),
@@ -139,6 +154,11 @@ fn init_level(
         wave_data: wave.clone(),
       },
       GameEntity,
+      LevelEntity,
     ));
+    if let Some(true) = wave.must_complete {
+      entity.insert(LevelTarget);
+    }
+    
   }
 }
