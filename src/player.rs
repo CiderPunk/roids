@@ -262,8 +262,6 @@ fn animate_flame(
 ){
   let mut transform = flame.into_inner();
   transform.scale = Vec3::splat(0.5 + (time.elapsed_secs() * 20.).sin().abs() * 0.5);
-
-
 }
 
 
