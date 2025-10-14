@@ -1,12 +1,13 @@
-use std::{clone, f32::consts::PI};
+use std::{clone, f32::consts::PI, ops::Range};
 
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{asset_loader::{AssetState, LevelHandle}, game_manager::{CurrentLevelIndex, GameEntity, GameState, LevelEntity, LevelTarget}, movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::{AssetState, LevelHandle}, bounds::Bounds, game_manager::{CurrentLevelIndex, GameEntity, GameState, LevelEntity, LevelTarget}, movement::Velocity, scheduling::GameSchedule};
 
 
 const ROID_SPAWN_DISTANCE: f32 = 150.0;
+const CORNERS:[(f32, f32);4] = [(1.,1.),(-1.,1.),(-1.,-1.),(1.,-1.), ];
 
 pub struct LevelPlugin;
 
@@ -30,6 +31,7 @@ fn update_spawners(
   mut spawn_write:MessageWriter<SpawnMessage>,
   time:Res<Time>,
   mut commands:Commands,
+  bounds:Single<&Bounds>,
 ){
   let mut rng = rand::rng();  
   for (entity, mut spawner) in query{
@@ -45,6 +47,7 @@ fn update_spawners(
           let return_angle = angle + rng.random_range(-0.3..0.3);
 
           let position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
+          //range
           let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin()) * -rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed);
 
           spawn_write.write(SpawnMessage{ 
@@ -63,6 +66,17 @@ fn update_spawners(
     }
   }
 }
+
+fn get_target_range(half_bounds:Vec3, position:Vec3)->Range<f32>{
+  for corner in CORNERS{
+
+
+  }
+
+  (0.0 .. 1.0)
+}
+
+
 
 #[derive(Resource, Default)]
 pub struct CurrentLevel(pub Option<LevelData>);
