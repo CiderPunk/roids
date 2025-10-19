@@ -3,9 +3,6 @@ use bevy_rand::{global::GlobalRng, plugin::EntropyPlugin};
 use bevy::{color::palettes::css::{CRIMSON, FUCHSIA, GREEN, YELLOW}, math::ops::atan2, prelude::*};
 use bevy_prng::WyRand;
 use rand::Rng;
-
-
-use rand_distr::{Distribution, Normal};
 use crate::{asset_loader::{AssetState, LevelHandle}, bounds::Bounds, game_manager::{CurrentLevelIndex, GameEntity, GameState, LevelEntity, LevelTarget}, movement::Velocity, scheduling::GameSchedule};
 
 
