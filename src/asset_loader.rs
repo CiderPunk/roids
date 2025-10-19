@@ -28,14 +28,13 @@ pub struct SceneAssets {
   pub ship_shield: Handle<Mesh>,
   pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
-  pub level_data: Handle<LevelCollectionData>,
 }
 
 #[derive(Resource)]
 struct GameFont(Handle<Font>);
 
 #[derive(Resource, Clone)]
-pub struct LevelHandle(Handle<LevelCollectionData>);
+pub struct LevelHandle(pub Handle<LevelCollectionData>);
 
 
 #[derive(Resource)]
@@ -111,7 +110,8 @@ fn extract_assets(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
   game_font: Res<GameFont>,
-  level_data: Res<LevelHandle>,
+  level_handle: Res<LevelHandle>,
+  level_assets: Res<Assets<LevelCollectionData>>,
   mut next_state: ResMut<NextState<AssetState>>,
 ) {
   let Some(gltf) = gltf_assets.get(&roids_scene.0) else {
@@ -146,7 +146,5 @@ fn extract_assets(
     diffuse_transmission:0.8,
     ..default()
   });
-
-  scene_assets.level_data = level_data.0.clone();
   next_state.set(AssetState::Ready);
 }

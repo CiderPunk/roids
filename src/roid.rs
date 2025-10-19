@@ -1,9 +1,11 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{CurrentLevel, GameEntity, GameState}, health::Health, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
 };
 use bevy::prelude::*;
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
 
@@ -41,8 +43,7 @@ impl Plugin for RoidPlugin {
   fn build(&self, app: &mut App) {
     app
       .insert_resource(WaveSpawnTimer{ timer: Timer::from_seconds(1., TimerMode::Repeating), count:1 })
-      .add_systems(OnEnter(GameState::LevelInit), init_waves)
-      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates).run_if(in_state(GameState::Alive)))
+      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates))
       .add_systems(
         Update,
         check_asteroid_health.in_set(GameSchedule::PreDespawnEntities),
@@ -66,8 +67,8 @@ fn check_asteroid_health(
   mut effect_writer: MessageWriter<EffectSpriteMessage>,
   scene_assets: Res<SceneAssets>,
   mut score_writer:MessageWriter<ScoreMessage>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>
 ) {
-  let mut rng = rand::rng();
   for (roid, health, transform, velocity, orig_bounds_warp) in query.iter() {
     if health.value > 0. {
       continue;
@@ -118,16 +119,18 @@ fn check_asteroid_health(
         next_size = RoidSize::Small;
         mass = ROID_SMALL_MASS;
       }
-    }
+  }
 
-    for _ in 0..2 {
-      let rotation = Vec3::new(
-        rng.random_range(-1. ..1.),
-        rng.random_range(-1. ..1.),
-        rng.random_range(-1. ..1.),
-      );
+  for _ in 0..2 {
+    let rotation = Vec3::new(
+      rng.random_range(-1. ..1.),
+      rng.random_range(-1. ..1.),
+      rng.random_range(-1. ..1.),
+    );
 
     commands.spawn((
+        LevelEntity,
+        LevelTarget,
         GameEntity,
         SceneRoot(scene_assets.roid1.clone()),
         BoundsWarp(orig_bounds_warp.0),
@@ -159,41 +162,38 @@ fn check_asteroid_health(
 }
 
 
-fn init_waves(
-  current_level: Res<CurrentLevel>,
-  mut spawn_timer:ResMut<WaveSpawnTimer>,
-){
-  let Some(level) = current_level.0 else {
-    return;
-  };
-  spawn_timer.timer = Timer::from_seconds(level.wave_time, TimerMode::Repeating);
-  spawn_timer.count = level.wave_count;
-  //set it to trigger this tick
-  spawn_timer.timer.set_elapsed( Duration::from_secs_f32(level.wave_time));
-}
-
 fn spawn_roids(
   mut commands: Commands, 
   scene_assets: Res<SceneAssets>,
-  mut spawn_timer: ResMut<WaveSpawnTimer>,
-  current_level: Res<CurrentLevel>,
-  time:Res<Time>,
-) {
-  let Some(level) = current_level.0 else {
-    return;
-  };
-  if spawn_timer.count == 0 { return; }
-  
-  spawn_timer.timer.tick(time.delta());
-  if !spawn_timer.timer.is_finished() { return; }
-
-  //spawn a new wave
-  spawn_timer.count-=1;
-  
-  let mut rng = rand::rng();
-  for _ in 0..level.wave_size {
-    let angle = rng.random_range(0. ..PI * 2.);
-    let return_angle = angle + rng.random_range(-0.3..0.3);
+  mut spawn_reader:MessageReader<SpawnMessage>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>,
+){
+  for spawn in spawn_reader.read(){
+    let scale: Vec3;
+    let collider_radius: f32;
+    let next_size: RoidSize;
+    let mass:f32;
+    match spawn.spawn_type{
+      SpawnType::Roid => {
+        scale = ROID_LARGE_SCALE;
+        collider_radius = ROID_LARGE_RADIUS;
+        next_size = RoidSize::Medium;
+        mass = ROID_LARGE_MASS;
+      }
+      SpawnType::RoidMedium => {
+        scale = ROID_MEDIUM_SCALE;
+        collider_radius = ROID_MEDIUM_RADIUS;
+        next_size = RoidSize::Small;
+        mass = ROID_MEDIUM_MASS;
+      }
+      SpawnType::RoidSmall => {
+        scale = ROID_SMALL_SCALE;
+        collider_radius = ROID_SMALL_RADIUS;
+        next_size = RoidSize::Small;
+        mass = ROID_SMALL_MASS;
+      }
+      _ => continue
+    }
 
     let rotation = Vec3::new(
       rng.random_range(-1. ..1.),
@@ -201,17 +201,14 @@ fn spawn_roids(
       rng.random_range(-1. ..1.),
     );
 
-    let start_position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
-    let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin())
-      * -rng.random_range(level.max_speed - level.speed_variance..level.max_speed);
-    //let velocity = Vec3::ZERO;
-
     commands.spawn((
+      LevelTarget,
       GameEntity,
+      LevelEntity,
       Roid(RoidSize::Large),
       BoundsWarp(false),
-      Transform::from_translation(start_position).with_scale(ROID_LARGE_SCALE),
-      Velocity(velocity),
+      Transform::from_translation(spawn.position).with_scale(ROID_LARGE_SCALE),
+      Velocity(spawn.velocity),
       SceneRoot(scene_assets.roid1.clone()),
       Rotation(rotation),
       Collider {
