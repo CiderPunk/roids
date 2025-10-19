@@ -72,6 +72,7 @@ fn bounds_warp(bounds: Query<&Bounds>, mut query: Query<(&mut Transform, &mut Bo
         transform.translation.z -= half_size.z * 2.;
       }
     } else {
+      //check if we're in bounds
       let translation = transform.translation.abs();
       if translation.x < half_size.x && translation.z < half_size.z {
         bounds_warp.0 = true;

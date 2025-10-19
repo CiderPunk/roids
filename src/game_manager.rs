@@ -1,9 +1,9 @@
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::AssetState, bounds::BoundsWarp, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::LEVEL_DATA, roid::Roid, scheduling::GameSchedule
+  asset_loader::AssetState, bounds::{Bounds, BoundsWarp}, input::{InputEventAction, InputEventType, InputTriggerMessage}, level::CurrentLevel, roid::Roid, scheduling::GameSchedule
 };
-use crate::level::LevelConfiguration;
+
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum GameState {
@@ -26,24 +26,19 @@ pub enum PauseState {
   Running,
 }
 
-
-
+#[derive(Component)]
+pub struct LevelTarget;
 
 #[derive(Resource, Default)]
 pub struct CurrentLevelIndex(pub usize);
-
-#[derive(Resource, Default)]
-pub struct CurrentLevel(pub Option<LevelConfiguration>);
-
-
-
-#[derive(Resource)]
-pub struct LevelData(Vec<LevelConfiguration>);
 
 
 
 #[derive(Component)]
 pub struct GameEntity;
+
+#[derive(Component)]
+pub struct LevelEntity;
 
 pub struct GameManagerPlugin;
 
@@ -55,7 +50,7 @@ impl Plugin for GameManagerPlugin {
       .init_resource::<CurrentLevel>()
       .insert_resource(CurrentLevelIndex(0))
       .insert_resource(GameManager{ level_time: Stopwatch::new(), level_test_timer: Timer::from_seconds(0.5, TimerMode::Repeating)})
-      .insert_resource(LevelData(LEVEL_DATA.to_vec()))
+     // .insert_resource(LevelData(LEVEL_DATA.to_vec()))
       .add_systems(OnEnter(AssetState::Ready), start_screen)
       .add_systems(OnEnter(GameState::GameInit), init_game)
       .add_systems(OnEnter(GameState::LevelInit), init_level)
@@ -76,14 +71,9 @@ fn clean_game(mut commands: Commands, query: Query<Entity, With<GameEntity>>) {
 
 fn init_game(
   mut next_state: ResMut<NextState<GameState>>,
-  mut current_level_index:ResMut<CurrentLevelIndex>,
-  current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
+  mut current_level_index:ResMut<CurrentLevelIndex>
 ) {
-
   current_level_index.0 = 0;
-  select_level(0, current_level, levels);
-  info!("Game initialized");
   next_state.set(GameState::LevelInit);
 }
 
@@ -100,20 +90,16 @@ fn init_level(
 
 fn level_end(
   mut current_level_index:ResMut<CurrentLevelIndex>,
-  current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
+  cleanup_query:Query<Entity, With<LevelEntity>>,
+  mut commands:Commands,
 ) {
   current_level_index.0 += 1;
-  select_level(current_level_index.0, current_level, levels);
+  info!("next level {}", current_level_index.0);
+  for entity in cleanup_query{
+    commands.entity(entity).try_despawn();
+  }
 }
 
-fn select_level(
-  index:usize,
-  mut current_level:ResMut<CurrentLevel>,
-  levels:Res<LevelData>,
-){
-  current_level.0 = Some(levels.0[index]);
-}
 
 fn start_screen(mut next_state: ResMut<NextState<GameState>>) {
   info!("Switching to start screen");
@@ -129,22 +115,23 @@ struct GameManager{
 
 
 fn check_game_state(
-  current_level:Res<CurrentLevelIndex>,
+  //current_level:Res<CurrentLevel>,
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
-  roid_query:Query<&BoundsWarp, With<Roid>>,
+  target_query:Query<&LevelTarget>,
   mut next_state: ResMut<NextState<GameState>>,
 ){
-  game_manager.level_time.tick(time.delta());
-  if game_manager.level_time.elapsed_secs() < LEVEL_DATA[current_level.0].time_before_comnplete { return; }
-
+  //let Some(level) = current_level.0.clone() else{ return; };
   game_manager.level_test_timer.tick(time.delta());
-  
   if !game_manager.level_test_timer.just_finished(){ return; }
-  for bounds in roid_query.iter(){
-    if bounds.0 { 
-      return; }
+  if !target_query.is_empty(){ return; }
+  /*
+  for bounds in target_query.iter(){
+    if bounds.is_some_and(|f| f.0) || bounds.is_none() { 
+      return; 
+    }
   }
+   */
   info!("LEVEL END");
   next_state.set(GameState::LevelEnd);
 }
