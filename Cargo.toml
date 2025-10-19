@@ -13,7 +13,14 @@ watcher = [
 bevy = { version = "0.17.2", features = [
     "bevy_asset",
 ] }
+
+
+rand_core = "0.9"
+bevy_rand = "0.12"
+bevy_prng = { version = "0.12", features = ["rand_chacha", "wyrand"] }
+
 rand = "0.9.2"
+rand_distr = "0.4"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 bevy_common_assets= {version = "0.14.0", features = ["json"]}
 serde = "1"
@@ -36,3 +43,4 @@ runner = "wasm-server-runner"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 uuid = { version = "1.18.1", default-features = false, features = ["js"] }
+bevy_rand = { version = "0.12", features = ["wasm_js"] }

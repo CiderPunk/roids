@@ -1,6 +1,8 @@
 use std::f32::consts::PI;
 
 use bevy::{color::palettes::css::WHITE, prelude::*};
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
 use crate::{
@@ -101,11 +103,10 @@ fn show_dead_screen(
   scene_assets: Res<SceneAssets>,
   player:Single<&Player>,
   mut modal_timer:ResMut<ModalTimer>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>
 ) {
   modal_timer.0.reset();
   modal_timer.0.unpause();
-
-  let mut rng = rand::rng();
   next_modal_state.set(ModalState::Open);
   info!("show dead screen");
   commands

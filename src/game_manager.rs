@@ -118,19 +118,20 @@ fn check_game_state(
   //current_level:Res<CurrentLevel>,
   mut game_manager:ResMut<GameManager>,
   time:Res<Time>,
-  target_query:Query<Option<&BoundsWarp>, With<LevelTarget>>,
+  target_query:Query<&LevelTarget>,
   mut next_state: ResMut<NextState<GameState>>,
 ){
   //let Some(level) = current_level.0.clone() else{ return; };
   game_manager.level_test_timer.tick(time.delta());
-  
   if !game_manager.level_test_timer.just_finished(){ return; }
+  if !target_query.is_empty(){ return; }
+  /*
   for bounds in target_query.iter(){
     if bounds.is_some_and(|f| f.0) || bounds.is_none() { 
       return; 
     }
-    
   }
+   */
   info!("LEVEL END");
   next_state.set(GameState::LevelEnd);
 }

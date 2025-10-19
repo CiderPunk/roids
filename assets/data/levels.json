@@ -7,9 +7,9 @@
         {
           "must_complete":true,
           "wave_type":"Roid",
-          "first_spawn":5.0,
+          "first_spawn":0.1,
           "cycle_time":2.0,
-          "cycles":2,
+          "cycles":1,
           "wave_size":2,
           "min_speed": 30.0,
           "max_speed": 40.0

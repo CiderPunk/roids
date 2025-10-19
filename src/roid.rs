@@ -4,6 +4,8 @@ use crate::{
   asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
 };
 use bevy::prelude::*;
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
 
@@ -65,8 +67,8 @@ fn check_asteroid_health(
   mut effect_writer: MessageWriter<EffectSpriteMessage>,
   scene_assets: Res<SceneAssets>,
   mut score_writer:MessageWriter<ScoreMessage>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>
 ) {
-  let mut rng = rand::rng();
   for (roid, health, transform, velocity, orig_bounds_warp) in query.iter() {
     if health.value > 0. {
       continue;
@@ -164,8 +166,8 @@ fn spawn_roids(
   mut commands: Commands, 
   scene_assets: Res<SceneAssets>,
   mut spawn_reader:MessageReader<SpawnMessage>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>,
 ){
-  let mut rng = rand::rng();
   for spawn in spawn_reader.read(){
     let scale: Vec3;
     let collider_radius: f32;
@@ -223,45 +225,3 @@ fn spawn_roids(
     ));
   }
 }
-
-/*
-  //spawn a new wave
-  spawn_timer.count-=1;
-  
-  let mut rng = rand::rng();
-  for _ in 0..level.wave_size {
-    let angle = rng.random_range(0. ..PI * 2.);
-    let return_angle = angle + rng.random_range(-0.3..0.3);
-
-    let rotation = Vec3::new(
-      rng.random_range(-1. ..1.),
-      rng.random_range(-1. ..1.),
-      rng.random_range(-1. ..1.),
-    );
-
-    let start_position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
-    let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin())
-      * -rng.random_range(level.max_speed - level.speed_variance..level.max_speed);
-    //let velocity = Vec3::ZERO;
-
-    commands.spawn((
-      GameEntity,
-      Roid(RoidSize::Large),
-      BoundsWarp(false),
-      Transform::from_translation(start_position).with_scale(ROID_LARGE_SCALE),
-      Velocity(velocity),
-      SceneRoot(scene_assets.roid1.clone()),
-      Rotation(rotation),
-      Collider {
-        radius: ROID_LARGE_RADIUS,
-        damage: ROID_COLLISION_DAMAGE,
-      },
-      Health {
-        value: 10.,
-        max: 10.,
-        last_hurt_by: None,
-      },
-      PhysicsObject::new(ROID_LARGE_MASS),
-      Acceleration{ acceleration: Vec3::ZERO, max_speed: ROID_MAX_SPEED}
-    ));
-     */

@@ -4,6 +4,8 @@ use bevy::{
   asset::RenderAssetUsages, mesh::{Indices, MeshTag, PrimitiveTopology}, platform::collections::HashMap, prelude::*, render::render_resource::{AsBindGroup, ShaderType}, shader::ShaderRef
 };
 
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
 use crate::{
@@ -205,8 +207,8 @@ fn spawn_effect_sprites(
   mesh: Res<EffectQuad>,
   effects: Res<EffectCollection>,
   time: Res<Time>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>
 ) {
-  let mut rng = rand::rng();
   for sprite in msg_effect_reader.read() {
     let Some(effect) = effects.0.get(&sprite.effect) else {
       continue;
