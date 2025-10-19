@@ -3,6 +3,7 @@ use bevy::{math::bounding::Aabb2d, prelude::*, window::WindowResized};
 use crate::{bounds::Bounds, game_manager::GameState, player::PlayerShip, scheduling::GameSchedule};
 
 pub const CAMERA_START_LOCATION: Vec3 = Vec3::new(0., 160., 0.);
+//pub const CAMERA_START_LOCATION: Vec3 = Vec3::new(0., 450., 0.);
 
 pub struct CameraPlugin;
 
