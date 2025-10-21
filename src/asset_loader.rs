@@ -17,11 +17,12 @@ pub enum AssetState {
 #[derive(Resource, Default)]
 pub struct AssetsLoading(pub Vec<UntypedHandle>);
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Clone)]
 pub struct SceneAssets {
   pub ship: Handle<Scene>,
   pub roid1: Handle<Scene>,
   pub flame: Handle<Scene>,
+  pub ufo: Handle<Scene>,
   pub font: Handle<Font>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
@@ -121,6 +122,9 @@ fn extract_assets(
   scene_assets.ship = gltf.named_scenes["Ship"].clone();
   scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
   scene_assets.flame = gltf.named_scenes["Flame"].clone();
+  scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
+
+
   scene_assets.bullet = meshes.add(
     Sphere::default().mesh().ico(2).unwrap()
   );
