@@ -27,30 +27,6 @@ impl Plugin for LevelPlugin{
   }
 }
 
-
-/*
-fn init_gizmos( 
-  mut commands:Commands,
-  mut gizmo_assets: ResMut<Assets<GizmoAsset>>){
-
-   let mut gizmo = GizmoAsset::new();
-       gizmo
-        .sphere(Isometry3d::IDENTITY, 20., CRIMSON)
-        .resolution(30_000 / 3);
-      commands.spawn((
-        Gizmo {
-            handle: gizmo_assets.add(gizmo),
-            line_config: GizmoLineConfig {
-                width: 5.,
-                ..default()
-            },
-            ..default()
-        },
-        Transform::from_xyz(4., 1., 0.),
-    ));
-}
- */
-
 fn update_spawners(
   query:Query<(Entity, &mut WaveSpawner)>,
   mut spawn_writer:MessageWriter<SpawnMessage>,
@@ -80,11 +56,25 @@ fn update_spawners(
 }
 
 fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveSpawner, half_size: Vec3, rng: &mut WyRand) {
- for _ in 0 .. spawner.wave_data.wave_size{
+  for _ in 0 .. spawner.wave_data.wave_size{
+
+    let x_dist = spawner.wave_data.x_distribution.unwrap_or(0.9);
+    let y_dist = spawner.wave_data.y_distribution.unwrap_or(0.9);
+    let x_iter = spawner.wave_data.x_iterations.unwrap_or(2);
+    let y_iter = spawner.wave_data.x_iterations.unwrap_or(2);
+    
     //pick target point
-    let target = Vec3::new(bell_curve_distribute(-half_size.x .. half_size.x, rng, 2), 0.,bell_curve_distribute(-half_size.z .. half_size.z, rng, 2 ));
+    let target = Vec3::new(bell_curve_distribute(-x_dist * half_size.x .. x_dist * half_size.x, rng, x_iter as usize), 0.,bell_curve_distribute(-y_dist * half_size.z .. y_dist * half_size.z, rng, y_iter as usize));
+    let target = loop_constrain(target, half_size);
+
+    let mut direction_range = 0. .. PI*2.;
+    if let Some(direction_array) = spawner.wave_data.spawn_direction {
+      direction_range = direction_array[0] .. direction_array[1];
+    }
+
     //pick angle
-    let angle:f32 = rng.random_range(0. .. PI * 2.);
+    let angle:f32 = rng.random_range(direction_range);
+
     let direction = Vec3::new(angle.cos(), 0., angle.sin());
     let Some(intersect) = bounds_intersect(target, direction, ROID_SPAWN_DISTANCE) else{ continue; };
     spawn_writer.write(SpawnMessage { 
@@ -92,6 +82,25 @@ fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveS
       position: intersect,
       velocity: -direction * rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed) });
   }
+}
+
+
+/// returns Restricted target to inside the half_size zone looping to the other end for out of bounds
+fn loop_constrain(target: Vec3, half_size: Vec3) -> Vec3 {
+  let mut target = target;
+  while target.x > half_size.x{
+    target.x -= half_size.x * 2.;
+  }  
+  while target.x < -half_size.x{
+    target.x += half_size.x * 2.;
+  }  
+  while target.z > half_size.z{
+    target.z -= half_size.z * 2.;
+  }  
+  while target.z < -half_size.z{
+    target.z += half_size.z * 2.;
+  }  
+  target
 }
 
 fn bounds_intersect(
@@ -116,112 +125,16 @@ fn bell_curve_distribute(
   rng: &mut WyRand,  
   samples:usize,
 )->f32{
+
+  if range.start == range.end{
+    return range.start;
+  }
   let mut total:f32 = 0.;
   for _ in 0 .. samples{
     total += rng.random_range(range.clone());
   }
   total / samples as f32
 }
-
-
-/*
-fn update_spawners(
-  query:Query<(Entity, &mut WaveSpawner)>,
-  mut spawn_write:MessageWriter<SpawnMessage>,
-  time:Res<Time>,
-  mut commands:Commands,
-  bounds:Single<&Bounds>,   
-  mut gizmo_assets: ResMut<Assets<GizmoAsset>>,
-  mut rng: Single<&mut WyRand, With<GlobalRng>>
-){
-  //let mut rng = rand::rng();  
-  for (entity, mut spawner) in query{
-    spawner.start_time.tick(time.delta());
-    if spawner.start_time.is_finished(){
-      spawner.cycle_time.tick(time.delta());
-      if spawner.start_time.just_finished() || spawner.cycle_time.just_finished(){
-        //spawn a wave
-        spawner.wave_count -= 1;
-
-        for _ in [0 .. spawner.wave_data.wave_size]{
-
-          //let normal_x = Normal::new(0., 100.).unwrap();
-          //let x = normal_x.sample(&mut *rng);
-
-
-          let target = Vec3::new(rng.random_range(-bounds.half_size.x .. bounds.half_size.x),0., rng.random_range(-bounds.half_size.z .. bounds.half_size.z));
-          let angle:f32 = rng.random_range(0. ..PI * 2.);
-          
-          let angle:f32 = PI;
-          //let return_angle = angle + rng.random_range(-0.3..0.3);
-          let position = Vec3::new(angle.cos(), 0., angle.sin()) * ROID_SPAWN_DISTANCE;
-          //range
-          let target_arc = get_target_arc(bounds.half_size, position);
-          info!("Target arc {:?}", target_arc);
-
-          let return_angle = rng.random_range(target_arc.clone());
-          let velocity = Vec3::new(return_angle.cos(), 0., return_angle.sin()) * -rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed);
-
-//let target_arc = 0. .. PI * -0.5;
-
-
-      let mut gizmo = GizmoAsset::new();
-      gizmo.arrow(position, position + velocity, FUCHSIA);
-
-      let start = target_arc.clone().start;
-      const ARC_LENGTH:f32 = 50.;
-    gizmo.arrow(position, position + Vec3::new(start.cos(), 0.,start.sin()) * ARC_LENGTH , YELLOW);
-      let end = target_arc.clone().end;
-      gizmo.arrow(position, position + Vec3::new(end.cos(), 0.,end.sin())  * ARC_LENGTH, GREEN);
-
-
-
-      commands.spawn(
-        Gizmo {
-            handle: gizmo_assets.add(gizmo),
-            ..default()
-        }
-      );
-
-
-
-          spawn_write.write(SpawnMessage{ 
-            spawn_type: spawner.spawn_type.clone() , 
-            position,
-            velocity, 
-          });
-        }
-
-        if spawner.wave_count == 0{
-          //despawn spawner
-          commands.entity(entity).despawn();
-          info!("Despawning wave spawner");
-        }
-      }
-    }
-  }
-}
-
-
-
-
-fn get_target_arc(half_bounds:Vec3, position:Vec3)->Range<f32>{
-  let mut low:f32 = PI;
-  let mut high:f32 = -PI;
-  for corner_transform in CORNERS{
-    let corner = Vec3::new(half_bounds.x * corner_transform.0, 0., half_bounds.z * corner_transform.1);
-    let diff = corner - position;
-    let mut angle = atan2(diff.z, diff.x);
-    if angle < 0.{
-      angle += PI * 2.;
-    }
-    low = low.min(angle);
-    high = high.max(angle);
-  }
-  low .. high
-}
-
- */
 
 #[derive(Resource, Default)]
 pub struct CurrentLevel(pub Option<LevelData>);
@@ -249,8 +162,12 @@ pub struct WaveData{
   wave_size:u32,
   min_speed:f32,
   max_speed:f32,
-  min_spawn_radians:Option<f32>,
-  max_spawn_radians:Option<f32>,
+  spawn_direction:Option<[f32;2]>,
+  x_distribution:Option<f32>,
+  y_distribution:Option<f32>,
+  x_iterations:Option<u32>,
+  y_iterations:Option<u32>,
+
 }
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
