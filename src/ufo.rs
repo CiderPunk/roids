@@ -31,6 +31,7 @@ fn spawn_ufo(
   commands: &mut Commands, 
   scene_assets: SceneAssets,
 ){
+  info!("Spawning UFO");
   commands.spawn((
     LevelTarget,
     GameEntity,

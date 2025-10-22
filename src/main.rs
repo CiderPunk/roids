@@ -27,7 +27,7 @@ use bevy_prng::WyRand;
 use bevy_rand::plugin::EntropyPlugin;
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, level::LevelPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, spawner::SpawnerPlugin, starfield::StarfieldPlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, level::LevelPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, spawner::SpawnerPlugin, starfield::StarfieldPlugin, ufo::UfoPlugin
 };
 
 
@@ -84,6 +84,7 @@ pub fn run_game() {
       ShadersPlugin,
       LevelPlugin,
       SpawnerPlugin,
+      UfoPlugin,
     ))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
