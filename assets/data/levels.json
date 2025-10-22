@@ -10,7 +10,7 @@
           "first_spawn":4.0,
           "cycle_time":2.0,
           "cycles":2,
-          "wave_size":10,
+          "wave_size":5,
           "min_speed": 20.0,
           "max_speed":25.0,
           
