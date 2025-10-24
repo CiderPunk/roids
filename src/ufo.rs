@@ -1,15 +1,30 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 
 use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, scheduling::GameSchedule};
 pub struct UfoPlugin;
 
 impl Plugin for UfoPlugin{
   fn build(&self, app: &mut bevy::app::App) {
-    app.add_systems(Update, spawn_ufos.in_set(GameSchedule::EntityUpdates));
+    app.add_systems(Update, spawn_ufos.in_set(GameSchedule::EntityUpdates))
+    .add_systems(OnEnter(GameState::LevelInit), ufo_startup);
+
   //  app.add_systems(Update, systems)
   }
 }
 
+
+
+fn ufo_startup(
+  mut commands: Commands,
+  scene_assets: Res<SceneAssets>,
+){
+  info!("spawning test UFO");
+  commands.spawn((
+    Transform::from_translation(Vec3::ZERO).with_scale(Vec3::splat(10.)),
+    SceneRoot(scene_assets.ufo.clone()),
+  ));
+
+}
 
 fn spawn_ufos(
   mut commands: Commands, 

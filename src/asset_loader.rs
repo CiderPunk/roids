@@ -1,4 +1,4 @@
-use bevy::{asset::LoadState, prelude::*};
+use bevy::{asset::LoadState, prelude::*, scene};
 use bevy_common_assets::json::JsonAssetPlugin;
 use crate::level::LevelCollectionData;
 
@@ -124,6 +124,7 @@ fn extract_assets(
   scene_assets.flame = gltf.named_scenes["Flame"].clone();
   scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
 
+info!("Scenes: {:?}", gltf.named_scenes.keys());
 
   scene_assets.bullet = meshes.add(
     Sphere::default().mesh().ico(2).unwrap()
