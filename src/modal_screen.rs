@@ -19,7 +19,7 @@ const FONT_SIZE_SMALL: f32 = 40.;
 #[derive(Resource)]
 struct ModalTimer(Timer);
 
-const DEATH_EUPHEMISMS:[&'static str;8] = [
+const DEATH_EUPHEMISMS:[&str;8] = [
   "You've Died",
   "You're Dead",
   "You've Un-Alived",
