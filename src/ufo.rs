@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{math::VectorSpace, prelude::*};
 
 use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, scheduling::GameSchedule};
@@ -6,8 +8,8 @@ pub struct UfoPlugin;
 impl Plugin for UfoPlugin{
   fn build(&self, app: &mut bevy::app::App) {
     app.add_systems(Update, spawn_ufos.in_set(GameSchedule::EntityUpdates))
-    .add_systems(OnEnter(GameState::LevelInit), ufo_startup);
-
+    //.add_systems(OnEnter(GameState::LevelInit), ufo_startup)
+;
   //  app.add_systems(Update, systems)
   }
 }
@@ -52,20 +54,23 @@ fn spawn_ufo(
     GameEntity,
     LevelEntity,
     BoundsWarp(false),
-    Transform::from_translation(spawn.position),
+    Transform::from_translation(spawn.position).with_scale(Vec3::splat(4.)).with_rotation(Quat::from_rotation_x(0.25*PI)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.ufo.clone()),
-    Rotation(Vec3::new(0.5,0.,0.)),
+    Rotation(Vec3::new(0.,5.,0.1)),
+
     Collider {
-      radius: 4.0,
+      radius: 3.5,
       damage: 20.0,
     },
+     
     Health {
       value: 10.,
       max: 10.,
       last_hurt_by: None,
     },
-    PhysicsObject::new(10.0),
+
+    //PhysicsObject::new(10.0),
   ));
 
 }

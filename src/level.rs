@@ -68,7 +68,8 @@ fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveS
     let target = loop_constrain(target, half_size);
 
     let mut direction_range = 0. .. PI*2.;
-    if let Some(direction_array) = spawner.wave_data.spawn_direction {
+    if let Some(direction_collection) = &spawner.wave_data.spawn_direction {
+      let direction_array = direction_collection[ rng.random_range(0 .. direction_collection.len())];
       direction_range = direction_array[0] .. direction_array[1];
     }
 
@@ -162,12 +163,11 @@ pub struct WaveData{
   wave_size:u32,
   min_speed:f32,
   max_speed:f32,
-  spawn_direction:Option<[f32;2]>,
+  spawn_direction:Option<Vec<[f32;2]>>,
   x_distribution:Option<f32>,
   y_distribution:Option<f32>,
   x_iterations:Option<u32>,
   y_iterations:Option<u32>,
-
 }
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
@@ -232,6 +232,5 @@ fn init_level(
     if let Some(true) = wave.must_complete {
       entity.insert(LevelTarget);
     }
-    
   }
 }
