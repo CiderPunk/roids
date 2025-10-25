@@ -87,8 +87,8 @@ fn spawn_ufo(
     },
      
     Health {
-      value: 50.,
-      max: 50.,
+      value: 20.,
+      max: 20.,
       last_hurt_by: None,
     },
 
