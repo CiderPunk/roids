@@ -2,18 +2,39 @@ use std::f32::consts::PI;
 
 use bevy::{math::VectorSpace, prelude::*};
 
-use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, scheduling::GameSchedule};
 pub struct UfoPlugin;
+
+
+#[derive(Component)]
+pub struct Ufo;
 
 impl Plugin for UfoPlugin{
   fn build(&self, app: &mut bevy::app::App) {
-    app.add_systems(Update, spawn_ufos.in_set(GameSchedule::EntityUpdates))
-    //.add_systems(OnEnter(GameState::LevelInit), ufo_startup)
-;
-  //  app.add_systems(Update, systems)
+    app
+      .add_systems(Update, spawn_ufos.in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, check_ufo_heath.in_set(GameSchedule::PreDespawnEntities));
   }
 }
 
+
+
+fn check_ufo_heath(
+  query: Query<(&Health, &GlobalTransform, &Velocity), With<Ufo>>,
+  mut effect_writer: MessageWriter<EffectSpriteMessage>,
+){
+
+  for (health, transform, velocity) in query.iter() {
+    if health.value > 0. {
+      continue;
+    }
+
+    effect_writer.write(
+      EffectSpriteMessage::new(
+        transform.translation(), 14.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+  }
+
+}
 
 
 fn ufo_startup(
@@ -53,6 +74,7 @@ fn spawn_ufo(
     LevelTarget,
     GameEntity,
     LevelEntity,
+    Ufo,
     BoundsWarp(false),
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(4.)).with_rotation(Quat::from_rotation_x(0.25*PI)),
     Velocity(spawn.velocity),
@@ -65,8 +87,8 @@ fn spawn_ufo(
     },
      
     Health {
-      value: 10.,
-      max: 10.,
+      value: 50.,
+      max: 50.,
       last_hurt_by: None,
     },
 

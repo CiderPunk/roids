@@ -43,11 +43,10 @@ impl Plugin for RoidPlugin {
   fn build(&self, app: &mut App) {
     app
       .insert_resource(WaveSpawnTimer{ timer: Timer::from_seconds(1., TimerMode::Repeating), count:1 })
-      .add_systems(Update, spawn_roids.in_set(GameSchedule::EntityUpdates))
-      .add_systems(
-        Update,
+      .add_systems(Update, (
+        spawn_roids.in_set(GameSchedule::EntityUpdates), 
         check_asteroid_health.in_set(GameSchedule::PreDespawnEntities),
-      );
+      ));
   }
 }
 
