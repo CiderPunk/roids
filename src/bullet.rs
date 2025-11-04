@@ -33,7 +33,7 @@ fn do_shooting(
     owner,
   } in ev_shoot_reader.read()
   {
-    let transform = Transform::from_translation(start).with_scale(Vec3::new(scale, scale, scale));
+    let transform = Transform::from_translation(start).with_scale(Vec3::splat(scale));
     commands.spawn((
       GameEntity,
       BoundsWarp(true),
