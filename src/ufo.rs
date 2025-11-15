@@ -21,6 +21,7 @@ impl Plugin for UfoPlugin{
     app
       .add_systems(Update, (spawn_ufos, update_ufos).in_set(GameSchedule::EntityUpdates))
       .add_systems(Update, check_ufo_heath.in_set(GameSchedule::PreDespawnEntities));
+      
   }
 }
 
@@ -77,7 +78,7 @@ fn spawn_ufo(
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(4.)).with_rotation(Quat::from_rotation_x(0.25*PI)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.ufo.clone()),
-    Rotation(Vec3::new(0.,5.,0.1)),
+    Rotation(Vec3::new(0.,2.,0.1)),
 
     Collider {
       radius: 3.5,

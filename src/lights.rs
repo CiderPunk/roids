@@ -24,6 +24,7 @@ impl Plugin for LightPlugin {
 
 #[derive(Component)]
 pub struct RotateLight {
+  verical_offset:f32,
   distance: f32,
   rotation: f32,
   rate: f32,
@@ -34,7 +35,7 @@ fn rotate_lights(time: Res<Time>, query: Query<(&mut RotateLight, &mut Transform
     rotate.rotation += time.delta_secs() * rotate.rate;
     transform.translation = Vec3::new(
       rotate.distance * rotate.rotation.sin(),
-      -50.,
+      rotate.verical_offset,
       rotate.distance * rotate.rotation.cos(),
     );
   }
@@ -46,13 +47,14 @@ fn spawn_lights(mut commands: Commands) {
     GameEntity,
     PointLight {
       color: WHITE.into(),
-      intensity: 1_700_000_000.0,
-      range: 500.,
+      intensity: 11_700_000_000.0,
+      range: 800.,
       //shadows_enabled: true,
       ..default()
     },
     Transform::from_translation(Vec3::new(100., -50., 100.)),
     RotateLight {
+      verical_offset:-350.,
       distance: 200.,
       rotation: 0.,
       rate: 0.2,
@@ -63,13 +65,14 @@ fn spawn_lights(mut commands: Commands) {
     GameEntity,
     PointLight {
       color: WHITE.into(),
-      intensity: 400_000_000.0,
-      range: 500.,
+      intensity: 5_400_000_000.0,
+      range: 800.,
       //shadows_enabled: true,
       ..default()
     },
-    Transform::from_translation(Vec3::new(100., -50., 100.)),
+    Transform::from_translation(Vec3::new(100., 250., 100.)),
     RotateLight {
+      verical_offset:-150.,
       distance: 200.,
       rotation: PI,
       rate: 0.33,

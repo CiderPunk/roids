@@ -122,7 +122,7 @@ fn extract_assets(
   scene_assets.ship = gltf.named_scenes["Ship"].clone();
   scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
   scene_assets.flame = gltf.named_scenes["Flame"].clone();
-  scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
+  scene_assets.ufo = gltf.named_scenes["Ufo3"].clone();
 
 info!("Scenes: {:?}", gltf.named_scenes.keys());
 
