@@ -111,8 +111,6 @@ fn extract_assets(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
   game_font: Res<GameFont>,
-  level_handle: Res<LevelHandle>,
-  level_assets: Res<Assets<LevelCollectionData>>,
   mut next_state: ResMut<NextState<AssetState>>,
 ) {
   let Some(gltf) = gltf_assets.get(&roids_scene.0) else {
@@ -122,7 +120,7 @@ fn extract_assets(
   scene_assets.ship = gltf.named_scenes["Ship"].clone();
   scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
   scene_assets.flame = gltf.named_scenes["Flame"].clone();
-  scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
+  scene_assets.ufo = gltf.named_scenes["Ufo4"].clone();
 
 info!("Scenes: {:?}", gltf.named_scenes.keys());
 
