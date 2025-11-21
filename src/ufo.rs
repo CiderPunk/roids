@@ -2,13 +2,15 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
 use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
+const UFO_BULLET_SPEED:f32 = 60.;
+  
 
 #[derive(Component)]
 pub struct Ufo{
@@ -36,12 +38,10 @@ fn check_ufo_heath(
     if health.value > 0. {
       continue;
     }
-
     effect_writer.write(
       EffectSpriteMessage::new(
         transform.translation(), 14.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
   }
-
 }
 
 
@@ -71,7 +71,7 @@ fn spawn_ufo(
     GameEntity,
     LevelEntity,
     Ufo{ 
-      shoot_timer: Timer::from_seconds(1.6, TimerMode::Repeating),
+      shoot_timer: Timer::from_seconds(0.5, TimerMode::Repeating),
       target_entity: None
     },
     BoundsWarp(false),
@@ -86,8 +86,8 @@ fn spawn_ufo(
     },
      
     Health {
-      value: 20.,
-      max: 20.,
+      value: 5.,
+      max: 5.,
       last_hurt_by: None,
     },
 
@@ -101,14 +101,30 @@ fn update_ufos(
   mut query: Query<(Entity, &mut Ufo, &GlobalTransform, &Velocity)>,
   mut shoot_writer: MessageWriter<ShootMessage>,
   mut rng: Single<&mut WyRand, With<GlobalRng>>,
+  player_query:Query<(&GlobalTransform, &Velocity), With<PlayerShip>>,
 ){
   for (entity, mut ufo, transform, velocity) in query.iter_mut(){
     ufo.shoot_timer.tick(time.delta());
     if ufo.shoot_timer.just_finished(){
       // shoot at player
-      info!("UFO at {:?} shooting!", transform.translation());
-      let direction = rng.random_range(-PI .. PI);
-      let shoot_velocity = Vec3::new(direction.sin()*60., 0., direction.cos()*60.) + velocity.0;
+      //info!("UFO at {:?} shooting!", transform.translation());
+
+
+      let mut direction = rng.random_range(-PI .. PI);
+      
+      for (player_transform, player_velocity) in player_query.iter(){
+        let diff =  player_transform.translation() - transform.translation();
+        if diff.length_squared() < 4000.0{
+          let time_to_hit = diff.length() / UFO_BULLET_SPEED;
+          let future_player_pos = player_transform.translation() + player_velocity.0 * time_to_hit;
+          let future_ufo_pos = transform.translation() + velocity.0 * time_to_hit;
+          let diff = future_player_pos - future_ufo_pos;
+          direction = diff.x.atan2(diff.z);
+          info!("UFO in range diff: {:?} dir:{:?}", diff, direction);          
+        } 
+      }
+
+    let shoot_velocity = Vec3::new(direction.sin() * UFO_BULLET_SPEED, 0., direction.cos()*UFO_BULLET_SPEED) + velocity.0;
       shoot_writer.write(ShootMessage::new(false, transform.translation(), shoot_velocity, 10.0, 1.0, entity));
     }
   }
