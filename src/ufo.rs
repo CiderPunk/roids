@@ -2,14 +2,16 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
 use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
+const UFO_BULLET_TIME_TO_LIVE: f32 =1.5;
 const UFO_BULLET_SPEED:f32 = 60.;
+const UFO_FIRE_DELAY:f32 = 0.6;
   
 
 #[derive(Component)]
@@ -71,10 +73,15 @@ fn spawn_ufo(
     GameEntity,
     LevelEntity,
     Ufo{ 
-      shoot_timer: Timer::from_seconds(0.5, TimerMode::Repeating),
+      shoot_timer: Timer::from_seconds(UFO_FIRE_DELAY, TimerMode::Repeating),
       target_entity: None
     },
-    BoundsWarp(false),
+    BoundsWarp{
+      entered_zone: false,
+      warp_vertically: true,
+      warp_horizontally: false,
+    },
+    BoundsDespawn,
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(4.)).with_rotation(Quat::from_rotation_x(0.25*PI)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.ufo.clone()),
@@ -116,16 +123,23 @@ fn update_ufos(
         let diff =  player_transform.translation() - transform.translation();
         if diff.length_squared() < 4000.0{
           let time_to_hit = diff.length() / UFO_BULLET_SPEED;
-          let future_player_pos = player_transform.translation() + player_velocity.0 * time_to_hit;
-          let future_ufo_pos = transform.translation() + velocity.0 * time_to_hit;
-          let diff = future_player_pos - future_ufo_pos;
-          direction = diff.x.atan2(diff.z);
-          info!("UFO in range diff: {:?} dir:{:?}", diff, direction);          
+          let future_diff = diff + player_velocity.0 * time_to_hit - velocity.0 * time_to_hit;
+          direction = future_diff.x.atan2(future_diff.z);
+          //info!("UFO in range diff: {:?} dir:{:?}", diff, direction);          
         } 
       }
 
     let shoot_velocity = Vec3::new(direction.sin() * UFO_BULLET_SPEED, 0., direction.cos()*UFO_BULLET_SPEED) + velocity.0;
-      shoot_writer.write(ShootMessage::new(false, transform.translation(), shoot_velocity, 10.0, 1.0, entity));
+
+    shoot_writer.write(ShootMessage::new(
+        false, 
+        transform.translation(), 
+        shoot_velocity, 
+        10.0, 
+        1.0, 
+        entity, 
+        UFO_BULLET_TIME_TO_LIVE
+      ));
     }
   }
 }
