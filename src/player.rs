@@ -19,6 +19,8 @@ const PLAYER_START_LIVES: u32 = 3;
 const PLAYER_SPAWN_INVINCIBLE_TIME: f32 = 3.;
 const PLAYER_SHIELD_SIZE: f32 = 3.5;
 const PLAYER_SHIELD_REPULSE_FORCE: f32 = 300.;
+const PLAYER_BULLET_TIME_TO_LIVE: f32 = 3.0;
+    
 
 pub struct PlayerPlugin;
 
@@ -187,8 +189,9 @@ commands.spawn((
         amount: PLAYER_DAMPING,
         min_speed: PLAYER_MIN_SPEED,
     },
-    BoundsWarp(true),
+    BoundsWarp::default(),
     Collider {
+      owner: None,
       radius: PLAYER_COLLLISION_RADIUS,
       damage: 0.,
     },
@@ -217,7 +220,7 @@ fn create_shield(
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),
       Transform::from_scale(Vec3::splat(PLAYER_SHIELD_SIZE)),
-      Collider{ radius: PLAYER_SHIELD_SIZE, damage: 0. },
+      Collider{ owner:Some(entity), radius: PLAYER_SHIELD_SIZE, damage: 0. },
     ));
   }
 }
@@ -299,6 +302,7 @@ fn player_shoot(
         PLAYER_BULLET_DAMAGE,
         PLAYER_BULLET_SCALE,
         player_entity,
+        PLAYER_BULLET_TIME_TO_LIVE,
       ));
       player.next_shoot_time += PLAYER_SHOOT_DELAY;
     } else {

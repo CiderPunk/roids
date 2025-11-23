@@ -1,3 +1,5 @@
+use std::os::unix::raw::time_t;
+
 use bevy::prelude::*;
 
 use crate::{
@@ -31,22 +33,23 @@ fn do_shooting(
     damage,
     scale,
     owner,
+    time_to_live,
   } in ev_shoot_reader.read()
   {
     let transform = Transform::from_translation(start).with_scale(Vec3::splat(scale));
     commands.spawn((
       GameEntity,
-      BoundsWarp(true),
+      BoundsWarp::default(),
       Bullet {
         damage,
-        owner: Some(owner),
+        owner,
         is_players: is_player,
       },
       Mesh3d(scene_assets.bullet.clone()),
       MeshMaterial3d(scene_assets.bullet_material.clone()),
       transform,
       Velocity(velocity),
-      TimeToLive(3.0),
+      TimeToLive(time_to_live),
     ));
   }
 }
@@ -93,6 +96,7 @@ pub struct ShootMessage {
   pub damage: f32,
   pub scale: f32,
   pub owner: Entity,
+  pub time_to_live: f32,
 }
 
 impl ShootMessage {
@@ -103,6 +107,7 @@ impl ShootMessage {
     damage: f32,
     scale: f32,
     owner: Entity,
+    time_to_live: f32,
   ) -> Self {
     Self {
       is_player,
@@ -111,6 +116,7 @@ impl ShootMessage {
       damage,
       scale,
       owner,
+      time_to_live,
     }
   }
 }
@@ -123,7 +129,7 @@ pub struct TimeToLive(pub f32);
 pub struct Bullet {
   pub is_players: bool,
   pub damage: f32,
-  pub owner: Option<Entity>,
+  pub owner: Entity
 }
 
 #[derive(Message)]

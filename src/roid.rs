@@ -156,12 +156,17 @@ fn spawn_roids(
       GameEntity,
       LevelEntity,
       Roid(size),
-      BoundsWarp(false),
+      BoundsWarp{
+        entered_zone: false,
+        warp_vertically: true,
+        warp_horizontally: true,
+      },
       Transform::from_translation(spawn.position).with_scale(scale),
       Velocity(spawn.velocity),
       SceneRoot(scene_assets.roid1.clone()),
       Rotation(rotation),
       Collider {
+        owner: None,
         radius: collider_radius,
         damage: ROID_COLLISION_DAMAGE,
       },

@@ -9,7 +9,7 @@
           "wave_type":"Roid",
           "first_spawn":0.0,
           "cycle_time":2.0,
-          "cycles":2,
+          "cycles":1,
           "wave_size":5,
           "min_speed": 20.0,
           "max_speed":25.0,
@@ -19,7 +19,7 @@
           "y_iterations":2
         },
          {
-          "must_complete":true,
+          "must_complete":false,
           "wave_type":"Ufo",
           "first_spawn":5.0,
           "cycle_time":10.0,
