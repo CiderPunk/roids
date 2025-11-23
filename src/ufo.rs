@@ -135,7 +135,7 @@ fn update_ufos(
         false, 
         transform.translation(), 
         shoot_velocity, 
-        10.0, 
+        -10.0, 
         1.0, 
         entity, 
         UFO_BULLET_TIME_TO_LIVE

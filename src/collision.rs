@@ -8,7 +8,7 @@ impl Plugin for CollisionPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(
       PostUpdate,
-      (detect_bullet_collisions, detect_player_collisions, shield_collisions).in_set(GameSchedule::CollisionDetection),
+      (bullet_collisions, detect_player_collisions, shield_collisions).in_set(GameSchedule::CollisionDetection),
     )
     //.add_systems(Update, _add_collision_shell)
     ;
@@ -91,6 +91,29 @@ fn detect_player_collisions(
     }
   }
 }
+
+
+fn bullet_collisions(
+  bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
+  targets: Query<(Entity, &Collider, &GlobalTransform)>,
+  mut health_writer: MessageWriter<HealthMessage>,
+  mut bullet_hit_writer: MessageWriter<BulletHitMessage>,
+){
+  for (bullet_entity, bullet, bullet_transform) in bullets.iter(){
+    for (target_entity, collider, target_transform) in targets.iter(){
+      if bullet.owner.is_some() && bullet.owner.unwrap() == target_entity{
+        continue;
+      }
+      let dist_squared = bullet_transform.translation().distance_squared(target_transform.translation());
+      if dist_squared < collider.radius * collider.radius{
+        info!("bullet hit ent {:?}", target_entity);
+        health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
+        bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
+      }
+    }
+  }
+}
+
 
 fn detect_bullet_collisions(
   bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
