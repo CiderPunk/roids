@@ -191,6 +191,7 @@ commands.spawn((
     },
     BoundsWarp::default(),
     Collider {
+      owner: None,
       radius: PLAYER_COLLLISION_RADIUS,
       damage: 0.,
     },
@@ -219,7 +220,7 @@ fn create_shield(
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),
       Transform::from_scale(Vec3::splat(PLAYER_SHIELD_SIZE)),
-      Collider{ radius: PLAYER_SHIELD_SIZE, damage: 0. },
+      Collider{ owner:Some(entity), radius: PLAYER_SHIELD_SIZE, damage: 0. },
     ));
   }
 }

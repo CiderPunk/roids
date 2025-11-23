@@ -20,6 +20,7 @@ impl Plugin for CollisionPlugin {
 
 #[derive(Component, Default)]
 pub struct Collider {
+  pub owner: Option<Entity>,
   pub radius: f32,
   pub damage: f32,
 }
@@ -101,50 +102,16 @@ fn bullet_collisions(
 ){
   for (bullet_entity, bullet, bullet_transform) in bullets.iter(){
     for (target_entity, collider, target_transform) in targets.iter(){
-      if bullet.owner.is_some() && bullet.owner.unwrap() == target_entity{
+      if bullet.owner == target_entity || (collider.owner.is_some() && collider.owner.unwrap() == bullet.owner){
         continue;
       }
       let dist_squared = bullet_transform.translation().distance_squared(target_transform.translation());
       if dist_squared < collider.radius * collider.radius{
         info!("bullet hit ent {:?}", target_entity);
-        health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
+        health_writer.write(HealthMessage::new(target_entity, Some(bullet.owner), bullet.damage));
         bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
       }
     }
   }
 }
 
-
-fn detect_bullet_collisions(
-  bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
-  players: Query<(Entity, &Collider, &GlobalTransform), With<PlayerShip>>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), (Without<PlayerShip>, Without<Shield>)>,
-  mut health_writer: MessageWriter<HealthMessage>,
-  mut bullet_hit_writer: MessageWriter<BulletHitMessage>,
-) {
-  for (bullet_entity, bullet, bullet_transform) in bullets.iter() {
-    if bullet.is_players {
-      for (target_entity, collider, target_transform) in baddies.iter() {
-        let dist_squared = bullet_transform
-          .translation()
-          .distance_squared(target_transform.translation());
-        if dist_squared < collider.radius * collider.radius {
-          //info!("bullet hit ent {:?}", target_entity);
-          health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
-          bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
-        }
-      }
-    } else {
-      for (target_entity, collider, target_transform) in players.iter() {
-        let dist_squared = bullet_transform
-          .translation()
-          .distance_squared(target_transform.translation());
-        if dist_squared < collider.radius * collider.radius {
-          //info!("bullet hit player {:?}", target_entity);
-          health_writer.write(HealthMessage::new(target_entity, bullet.owner, bullet.damage));
-          bullet_hit_writer.write(BulletHitMessage::new(bullet_entity));
-        }
-      }
-    }
-  }
-}

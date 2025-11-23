@@ -42,7 +42,7 @@ fn do_shooting(
       BoundsWarp::default(),
       Bullet {
         damage,
-        owner: Some(owner),
+        owner,
         is_players: is_player,
       },
       Mesh3d(scene_assets.bullet.clone()),
@@ -129,7 +129,7 @@ pub struct TimeToLive(pub f32);
 pub struct Bullet {
   pub is_players: bool,
   pub damage: f32,
-  pub owner: Option<Entity>,
+  pub owner: Entity
 }
 
 #[derive(Message)]

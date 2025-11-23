@@ -88,6 +88,7 @@ fn spawn_ufo(
     Rotation(Vec3::new(0.,2.,0.1)),
 
     Collider {
+      owner: None,
       radius: 3.5,
       damage: 20.0,
     },

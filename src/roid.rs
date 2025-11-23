@@ -166,6 +166,7 @@ fn spawn_roids(
       SceneRoot(scene_assets.roid1.clone()),
       Rotation(rotation),
       Collider {
+        owner: None,
         radius: collider_radius,
         damage: ROID_COLLISION_DAMAGE,
       },
