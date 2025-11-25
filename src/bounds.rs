@@ -20,8 +20,8 @@ impl Plugin for BoundsPlugin {
       .add_systems(
         Update,
         (
-          bounds_despawn.in_set(GameSchedule::DespawnEntities),
-          bounds_warp.in_set(GameSchedule::EntityUpdates),
+          //.in_set(GameSchedule::DespawnEntities),
+          (bounds_warp, bounds_despawn).chain().in_set(GameSchedule::EntityUpdates),
         ),
       );
   }
@@ -35,47 +35,60 @@ pub struct Bounds {
 #[derive(Component)]
 pub struct BoundsDespawn;
 
-#[derive(Component, Default, Deref, DerefMut)]
-pub struct BoundsWarp(pub bool);
+#[derive(Component)]
+pub struct BoundsWarp{
+  pub entered_zone: bool,
+  pub warp_vertically: bool,
+  pub warp_horizontally: bool,
+}
+
+
+impl Default for BoundsWarp {
+  fn default() -> Self {
+    BoundsWarp {
+      entered_zone: false,
+      warp_vertically: true,
+      warp_horizontally: true,
+    }
+  }
+} 
 
 fn bounds_despawn(
   mut commands: Commands,
-  bounds: Query<&Bounds>,
-  query: Query<(Entity, &GlobalTransform), With<BoundsDespawn>>,
+  bounds: Single<&Bounds>,
+  query: Query<(Entity, &GlobalTransform, Option<&BoundsWarp>), With<BoundsDespawn>>,
 ) {
-  let Ok(Bounds { half_size }) = bounds.single() else {
-    return;
-  };
-
-  for (entity, transform) in query.iter() {
+  for (entity, transform, bounds_warp) in query.iter() {
+    //don't despawn until we've entered the bounds at least once
+    if bounds_warp.is_some() && !bounds_warp.unwrap().entered_zone {
+      continue;
+    }
     let translation = transform.translation().abs();
-    if translation.x > half_size.x || translation.z > half_size.z {
+    if translation.x > bounds.half_size.x || translation.z > bounds.half_size.z {
       commands.entity(entity).despawn();
     }
   }
 }
+
+
 
 fn bounds_warp(bounds: Query<&Bounds>, mut query: Query<(&mut Transform, &mut BoundsWarp)>) {
   let Ok(Bounds { half_size }) = bounds.single() else {
     return;
   };
   for (mut transform, mut bounds_warp) in &mut query {
-    if bounds_warp.0 {
-      if transform.translation.x < -half_size.x {
-        transform.translation.x += half_size.x * 2.;
-      } else if transform.translation.x > half_size.x {
-        transform.translation.x -= half_size.x * 2.;
+    let abs_translation = transform.translation.abs();
+    if bounds_warp.entered_zone {
+      if bounds_warp.warp_horizontally && abs_translation.x > half_size.x {
+        transform.translation.x += half_size.x * 2. * -transform.translation.x.signum();
       }
-      if transform.translation.z < -half_size.z {
-        transform.translation.z += half_size.z * 2.;
-      } else if transform.translation.z > half_size.z {
-        transform.translation.z -= half_size.z * 2.;
-      }
+      if bounds_warp.warp_vertically && abs_translation.z > half_size.z {
+        transform.translation.z += half_size.z * 2. * -transform.translation.z.signum();
+      } 
     } else {
       //check if we're in bounds
-      let translation = transform.translation.abs();
-      if translation.x < half_size.x && translation.z < half_size.z {
-        bounds_warp.0 = true;
+      if abs_translation.x < half_size.x && abs_translation.z < half_size.z {
+        bounds_warp.entered_zone = true;
       }
     }
   }
