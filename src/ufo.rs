@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
@@ -88,17 +88,18 @@ fn spawn_ufo(
     Rotation(Vec3::new(0.,2.,0.1)),
 
     Collider {
+      collison_group: CollisionFlags::Enemy,
+      collision_mask: CollisionFlags::Player | CollisionFlags::Asteroid,
       owner: None,
       radius: 3.5,
       damage: 20.0,
     },
-     
+
     Health {
       value: 5.,
       max: 5.,
       last_hurt_by: None,
     },
-
     //PhysicsObject::new(10.0),
   ));
 
