@@ -20,8 +20,8 @@ impl Plugin for BoundsPlugin {
       .add_systems(
         Update,
         (
-          //.in_set(GameSchedule::DespawnEntities),
-          (bounds_warp, bounds_despawn).chain().in_set(GameSchedule::EntityUpdates),
+          bounds_despawn.in_set(GameSchedule::DespawnEntities),
+          bounds_warp.in_set(GameSchedule::EntityUpdates),
         ),
       );
   }
