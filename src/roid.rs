@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::Collider, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::BoundsWarp, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
 };
 use bevy::prelude::*;
 use bevy_prng::WyRand;
@@ -166,6 +166,8 @@ fn spawn_roids(
       SceneRoot(scene_assets.roid1.clone()),
       Rotation(rotation),
       Collider {
+        collison_group: CollisionFlags::Asteroid,
+        collision_mask: CollisionFlags::Enemy | CollisionFlags::Player,
         owner: None,
         radius: collider_radius,
         damage: ROID_COLLISION_DAMAGE,

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::Collider, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
+  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -191,6 +191,8 @@ commands.spawn((
     },
     BoundsWarp::default(),
     Collider {
+      collison_group: CollisionFlags::Player,
+      collision_mask: CollisionFlags::Enemy | CollisionFlags::Asteroid,
       owner: None,
       radius: PLAYER_COLLLISION_RADIUS,
       damage: 0.,
@@ -220,7 +222,13 @@ fn create_shield(
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),
       Transform::from_scale(Vec3::splat(PLAYER_SHIELD_SIZE)),
-      Collider{ owner:Some(entity), radius: PLAYER_SHIELD_SIZE, damage: 0. },
+      Collider{ 
+        collison_group: CollisionFlags::Player,
+        collision_mask: CollisionFlags::Enemy | CollisionFlags::Asteroid,
+        owner:Some(entity),
+        radius: PLAYER_SHIELD_SIZE,
+        damage: 0.
+      },
     ));
   }
 }

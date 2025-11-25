@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bitmask_enum::bitmask;
+
 
 use crate::{
   bullet::{Bullet, BulletHitMessage}, health::HealthMessage, movement::{PhysicsMessage, PhysicsObject}, player::{Invulnerable, PlayerShip, Shield}, scheduling::GameSchedule
@@ -8,7 +10,7 @@ impl Plugin for CollisionPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(
       PostUpdate,
-      (bullet_collisions, detect_player_collisions, shield_collisions).in_set(GameSchedule::CollisionDetection),
+      (bullet_collisions, collider_collisions, shield_collisions).in_set(GameSchedule::CollisionDetection),
     )
     //.add_systems(Update, _add_collision_shell)
     ;
@@ -17,12 +19,24 @@ impl Plugin for CollisionPlugin {
 
 
 
+#[derive(Default)]
+#[bitmask]
+pub enum CollisionFlags{
+  #[default]
+  None = 0,
+  Asteroid, 
+  Player,
+  Enemy,
+}
+    
 
 #[derive(Component, Default)]
 pub struct Collider {
   pub owner: Option<Entity>,
   pub radius: f32,
   pub damage: f32,
+  pub collison_group: CollisionFlags,
+  pub collision_mask: CollisionFlags,
 }
 
 fn _add_collision_shell(
@@ -93,6 +107,26 @@ fn detect_player_collisions(
   }
 }
 
+
+fn  collider_collisions(
+  entity_query:Query<(Entity, &Collider, &GlobalTransform), Without<Invulnerable>>,
+  mut health_writer: MessageWriter<HealthMessage>,
+){
+  for (entity_a, collider_a, transform_a) in entity_query.iter(){
+    for (entity_b, collider_b, transform_b) in entity_query.iter(){
+      if entity_a == entity_b || collider_a.collision_mask & collider_b.collison_group != collider_b.collison_group{
+        continue;
+      }
+      let dist_squared = transform_a.translation().distance_squared(transform_b.translation());
+      let allowed_dist = collider_a.radius + collider_b.radius;
+      if dist_squared < allowed_dist * allowed_dist{
+        info!("ent collision {:?} {:?}", entity_a, entity_b);
+        health_writer.write(HealthMessage::new(entity_a, Some(entity_b), collider_b.damage));
+        health_writer.write(HealthMessage::new(entity_b, Some(entity_a), collider_a.damage));
+      }
+    }
+  }
+}
 
 fn bullet_collisions(
   bullets: Query<(Entity, &Bullet, &GlobalTransform)>,
