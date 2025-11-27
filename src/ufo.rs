@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule, wreckage::SpawnWreckageMessage};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
@@ -33,13 +33,27 @@ impl Plugin for UfoPlugin{
 
 fn check_ufo_heath(
   query: Query<(&Health, &GlobalTransform, &Velocity), With<Ufo>>,
+  scene_assets: Res<SceneAssets>,
+  mut rng: Single<&mut WyRand, With<GlobalRng>>,
   mut effect_writer: MessageWriter<EffectSpriteMessage>,
+  mut msg_wreckage_writer: MessageWriter<SpawnWreckageMessage>,
 ){
 
   for (health, transform, velocity) in query.iter() {
     if health.value > 0. {
       continue;
     }
+    info!("UFO destroyed, spawning wreckage");
+    for i in 0 .. 3{
+      msg_wreckage_writer.write(SpawnWreckageMessage::new(
+        crate::wreckage::WreckageType::UfoPartRim,
+        Transform::from_translation(transform.translation()).with_scale(Vec3::splat(4.)).with_rotation(transform.rotation() * Quat::from_rotation_y(i as f32 * PI * 0.66)),
+        Vec3::new(0. + rng.random_range(-0.5 .. 0.5), 2. + rng.random_range(-0.5 .. 0.5), 0.1 + rng.random_range(-0.5 .. 0.5)),
+        velocity.0 + Vec3::new(rng.random_range(-5. .. 5.), rng.random_range(-2. .. 2.), rng.random_range(-5. .. 5.)),
+        rng.random_range(1.5 .. 2.0),
+      ));
+    }
+
     effect_writer.write(
       EffectSpriteMessage::new(
         transform.translation(), 14.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
