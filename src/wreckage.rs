@@ -2,7 +2,7 @@ use bevy::{prelude::*, state::commands};
 use bevy_prng::WyRand;
 use bevy_rand::global::GlobalRng;
 
-use crate::{asset_loader::SceneAssets, bounds::BoundsDespawn, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::GameEntity, movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::BoundsDespawn, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::GameEntity, movement::{Rotation, Velocity}, scheduling::GameSchedule};
 
 pub struct WreckagePlugin;
 impl Plugin for WreckagePlugin {
@@ -68,6 +68,7 @@ fn spawn_wreckage(
       },
       Velocity(msg.velocity),
       SceneRoot(scene_handle),
+      Rotation(msg.rotation),
       msg.transform.clone(),
     ));
   }
