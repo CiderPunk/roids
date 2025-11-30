@@ -195,7 +195,7 @@ commands.spawn((
       collision_mask: CollisionFlags::Enemy | CollisionFlags::Asteroid,
       owner: None,
       radius: PLAYER_COLLLISION_RADIUS,
-      damage: 0.,
+      damage: -10.,
     },
     Health {
       value: 10.,
@@ -218,6 +218,7 @@ fn create_shield(
 ) {
   for entity in query.iter() {
     commands.spawn((
+      GameEntity,
       Shield{ owner: entity, repulse_force: PLAYER_SHIELD_REPULSE_FORCE},
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),

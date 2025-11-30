@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use bevy::prelude::*;
 
@@ -12,6 +12,7 @@ use rand::Rng;
 const UFO_BULLET_TIME_TO_LIVE: f32 =1.5;
 const UFO_BULLET_SPEED:f32 = 60.;
 const UFO_FIRE_DELAY:f32 = 0.6;
+const UFO_AIMED_FIRE_DELAY:f32 = 1.2;
   
 
 #[derive(Component)]
@@ -106,7 +107,7 @@ fn spawn_ufo(
       collision_mask: CollisionFlags::Player | CollisionFlags::Asteroid,
       owner: None,
       radius: 3.5,
-      damage: 20.0,
+      damage: -20.0,
     },
 
     Health {
@@ -133,17 +134,37 @@ fn update_ufos(
       //info!("UFO at {:?} shooting!", transform.translation());
 
 
-      let mut direction = rng.random_range(-PI .. PI);
-      
+      let direction;
+      let mut closest_diff:Vec3 = Vec3::ZERO;
+      let mut closest_velocity:Vec3 = Vec3::ZERO;
+      let mut shortest_distance = std::f32::MAX;
+      let mut found = false;
+
       for (player_transform, player_velocity) in player_query.iter(){
         let diff =  player_transform.translation() - transform.translation();
         if diff.length_squared() < 4000.0{
-          let time_to_hit = diff.length() / UFO_BULLET_SPEED;
-          let future_diff = diff + player_velocity.0 * time_to_hit - velocity.0 * time_to_hit;
-          direction = future_diff.x.atan2(future_diff.z);
-          //info!("UFO in range diff: {:?} dir:{:?}", diff, direction);          
-        } 
+          found = true;
+          let length_squared = diff.length_squared();
+          if length_squared < shortest_distance{
+            shortest_distance = length_squared;
+            closest_diff = diff;
+            closest_velocity = player_velocity.0;
+          }
+        }
       }
+      if found{
+        let time_to_hit = closest_diff.length() / UFO_BULLET_SPEED;
+        let future_diff = closest_diff + (closest_velocity * time_to_hit) - (velocity.0 * time_to_hit);
+        direction = future_diff.x.atan2(future_diff.z);
+        //info!("UFO in range diff: {:?} dir:{:?}", diff, direction);          
+        ufo.shoot_timer.set_duration(Duration::from_secs_f32( UFO_AIMED_FIRE_DELAY));        
+      }
+      else{
+        ufo.shoot_timer.set_duration(Duration::from_secs_f32( UFO_FIRE_DELAY));        
+        direction = rng.random_range(-PI .. PI)
+      }
+
+      
 
     let shoot_velocity = Vec3::new(direction.sin() * UFO_BULLET_SPEED, 0., direction.cos()*UFO_BULLET_SPEED) + velocity.0;
 

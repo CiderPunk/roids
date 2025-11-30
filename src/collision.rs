@@ -79,35 +79,6 @@ fn shield_collisions(
   }
 }
 
-fn detect_player_collisions(
-  player: Query<(Entity, &Collider, &GlobalTransform), (With<PlayerShip>, Without<Invulnerable>)>,
-  baddies: Query<(Entity, &Collider, &GlobalTransform), Without<PlayerShip>>,
-  mut health_writer: MessageWriter<HealthMessage>,
-) {
-  for (player_entity, player_collider, player_transform) in player.iter() {
-    for (enemy_entity, enemy_collider, enemy_transform) in baddies.iter() {
-      let dist_squared = player_transform
-        .translation()
-        .distance_squared(enemy_transform.translation());
-      let allowded_dist = player_collider.radius + enemy_collider.radius;
-      if dist_squared < allowded_dist * allowded_dist {
-        //info!("ent collision {:?} {:?}", player_entity, enemy_entity);
-        health_writer.write(HealthMessage::new(
-          player_entity,
-          Some(enemy_entity),
-          enemy_collider.damage,
-        ));
-        health_writer.write(HealthMessage::new(
-          enemy_entity,
-          Some(player_entity),
-          player_collider.damage,
-        ));
-      }
-    }
-  }
-}
-
-
 fn  collider_collisions(
   entity_query:Query<(Entity, &Collider, &GlobalTransform), Without<Invulnerable>>,
   mut health_writer: MessageWriter<HealthMessage>,
