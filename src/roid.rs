@@ -157,7 +157,6 @@ fn spawn_roids(
       LevelEntity,
       Roid(size),
       BoundsWarp{
-        entered_zone: false,
         warp_vertically: true,
         warp_horizontally: true,
       },

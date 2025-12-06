@@ -21,7 +21,7 @@ impl Plugin for BoundsPlugin {
         Update,
         (
           bounds_despawn.in_set(GameSchedule::DespawnEntities),
-          bounds_warp.in_set(GameSchedule::EntityUpdates),
+          (bounds_warp, bounds_enter).chain().in_set(GameSchedule::EntityUpdates),
         ),
       );
   }
@@ -33,11 +33,13 @@ pub struct Bounds {
 }
 
 #[derive(Component)]
+pub struct InBounds;
+
+#[derive(Component)]
 pub struct BoundsDespawn;
 
 #[derive(Component)]
 pub struct BoundsWarp{
-  pub entered_zone: bool,
   pub warp_vertically: bool,
   pub warp_horizontally: bool,
 }
@@ -46,23 +48,32 @@ pub struct BoundsWarp{
 impl Default for BoundsWarp {
   fn default() -> Self {
     BoundsWarp {
-      entered_zone: false,
       warp_vertically: true,
       warp_horizontally: true,
     }
   }
 } 
 
+fn bounds_enter(
+  mut commands: Commands,
+  bounds: Single<&Bounds>,
+  query: Query<(Entity, &GlobalTransform), (Without<InBounds> , Or<(With<BoundsDespawn>, With<BoundsWarp>)>)>,
+){
+ for (entity, transform) in query.iter() {
+    let translation = transform.translation().abs();
+    if translation.x < bounds.half_size.x && translation.z < bounds.half_size.z {
+      info!("Entity {:?} entered bounds", entity);
+      commands.entity(entity).insert(InBounds);
+    }
+  }
+}
+
 fn bounds_despawn(
   mut commands: Commands,
   bounds: Single<&Bounds>,
-  query: Query<(Entity, &GlobalTransform, Option<&BoundsWarp>), With<BoundsDespawn>>,
+  query: Query<(Entity, &GlobalTransform), (With<BoundsDespawn>, With<InBounds>)>,
 ) {
-  for (entity, transform, bounds_warp) in query.iter() {
-    //don't despawn until we've entered the bounds at least once
-    if bounds_warp.is_some() && !bounds_warp.unwrap().entered_zone {
-      continue;
-    }
+  for (entity, transform) in query.iter() {
     let translation = transform.translation().abs();
     if translation.x > bounds.half_size.x || translation.z > bounds.half_size.z {
       commands.entity(entity).despawn();
@@ -72,25 +83,18 @@ fn bounds_despawn(
 
 
 
-fn bounds_warp(bounds: Query<&Bounds>, mut query: Query<(&mut Transform, &mut BoundsWarp)>) {
-  let Ok(Bounds { half_size }) = bounds.single() else {
-    return;
-  };
-  for (mut transform, mut bounds_warp) in &mut query {
+fn bounds_warp(
+  bounds: Single<&Bounds>, 
+  mut query: Query<(&mut Transform, &BoundsWarp), With<InBounds>>
+) {
+  for (mut transform, bounds_warp) in &mut query {
     let abs_translation = transform.translation.abs();
-    if bounds_warp.entered_zone {
-      if bounds_warp.warp_horizontally && abs_translation.x > half_size.x {
-        transform.translation.x += half_size.x * 2. * -transform.translation.x.signum();
-      }
-      if bounds_warp.warp_vertically && abs_translation.z > half_size.z {
-        transform.translation.z += half_size.z * 2. * -transform.translation.z.signum();
-      } 
-    } else {
-      //check if we're in bounds
-      if abs_translation.x < half_size.x && abs_translation.z < half_size.z {
-        bounds_warp.entered_zone = true;
-      }
+    if bounds_warp.warp_horizontally && abs_translation.x > bounds.half_size.x {
+      transform.translation.x += bounds.half_size.x * 2. * -transform.translation.x.signum();
     }
+    if bounds_warp.warp_vertically && abs_translation.z > bounds.half_size.z {
+      transform.translation.z += bounds.half_size.z * 2. * -transform.translation.z.signum();
+    } 
   }
 }
 

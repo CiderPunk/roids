@@ -2,7 +2,7 @@ use std::{f32::consts::PI, time::Duration};
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule, wreckage::SpawnWreckageMessage};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp, InBounds}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule, wreckage::SpawnWreckageMessage};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
@@ -50,8 +50,8 @@ fn check_ufo_heath(
         crate::wreckage::WreckageType::UfoPartRim,
         Transform::from_translation(transform.translation()).with_scale(Vec3::splat(4.)).with_rotation(transform.rotation() * Quat::from_rotation_y(i as f32 * PI * 0.66)),
         Vec3::new(0. + rng.random_range(-0.5 .. 0.5), 2. + rng.random_range(-0.5 .. 0.5), 0.1 + rng.random_range(-0.5 .. 0.5)),
-        velocity.0 + Vec3::new(rng.random_range(-5. .. 5.), rng.random_range(-2. .. 2.), rng.random_range(-5. .. 5.)),
-        rng.random_range(1.5 .. 2.0),
+        velocity.0 + Vec3::new(rng.random_range(-7. .. 7.), rng.random_range(-2. .. 2.), rng.random_range(-7. .. 7.)),
+        rng.random_range(0.7 .. 2.0),
       ));
     }
 
@@ -60,7 +60,6 @@ fn check_ufo_heath(
         transform.translation(), 14.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
   }
 }
-
 
 fn spawn_ufos(
   mut commands: Commands, 
@@ -92,7 +91,6 @@ fn spawn_ufo(
       target_entity: None
     },
     BoundsWarp{
-      entered_zone: false,
       warp_vertically: true,
       warp_horizontally: false,
     },
@@ -122,7 +120,7 @@ fn spawn_ufo(
 
 fn update_ufos(
   time: Res<Time>,
-  mut query: Query<(Entity, &mut Ufo, &GlobalTransform, &Velocity)>,
+  mut query: Query<(Entity, &mut Ufo, &GlobalTransform, &Velocity), With<InBounds>>,
   mut shoot_writer: MessageWriter<ShootMessage>,
   mut rng: Single<&mut WyRand, With<GlobalRng>>,
   player_query:Query<(&GlobalTransform, &Velocity), With<PlayerShip>>,

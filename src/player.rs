@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
+  asset_loader::SceneAssets, bounds::{BoundsWarp, InBounds}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -190,6 +190,7 @@ commands.spawn((
         min_speed: PLAYER_MIN_SPEED,
     },
     BoundsWarp::default(),
+    InBounds,
     Collider {
       collison_group: CollisionFlags::Player,
       collision_mask: CollisionFlags::Enemy | CollisionFlags::Asteroid,
