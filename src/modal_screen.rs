@@ -19,15 +19,16 @@ const FONT_SIZE_SMALL: f32 = 40.;
 #[derive(Resource)]
 struct ModalTimer(Timer);
 
-const DEATH_EUPHEMISMS:[&str;8] = [
-  "You've Died",
-  "You're Dead",
-  "You've Un-Alived",
-  "You are Deceased",
-  "You have Expired",
-  "You've 'Sploded",
-  "You've Vapourised", 
-  "You have ceased to be", 
+const DEATH_EUPHEMISMS:[&str;9] = [
+  "You've died",
+  "You're dead",
+  "You've un-alived",
+  "You are deceased",
+  "You have expired",
+  "You've 'sploded",
+  "You've vapourised", 
+  "You're space dust", 
+  "You've ceased to be", 
 ];
 
 pub struct ModalScreenPlugin;
@@ -255,9 +256,9 @@ fn show_start_screen(
       .with_scale(Vec3::splat(8.0))
       .with_rotation(Quat::from_euler(
         EulerRot::XYZ,
-        rng.random_range(0. ..PI * 2.),
-        rng.random_range(0. ..PI * 2.),
-        rng.random_range(0. ..PI * 2.),
+        rng.random_range(-PI .. PI),
+        rng.random_range(-PI .. PI),
+        rng.random_range(-PI .. PI),
       )),
     SceneRoot(scene_assets.roid1.clone()),
     Rotation(rotation),
@@ -269,9 +270,9 @@ fn show_start_screen(
       .with_scale(Vec3::splat(6.0))
       .with_rotation(Quat::from_euler(
         EulerRot::XYZ,
-        rng.random_range(0. ..PI * 2.),
-        rng.random_range(0. ..PI * 2.),
-        rng.random_range(0. ..PI * 2.),
+        rng.random_range(-PI .. PI),
+        rng.random_range(-PI .. PI),
+        rng.random_range(-PI .. PI),
       )),
     SceneRoot(scene_assets.roid1.clone()),
     Rotation(rotation2),
