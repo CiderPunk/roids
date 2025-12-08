@@ -77,7 +77,13 @@ fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveS
     let angle:f32 = rng.random_range(direction_range);
 
     let direction = Vec3::new(angle.cos(), 0., angle.sin());
-    let Some(intersect) = bounds_intersect(target, direction, ROID_SPAWN_DISTANCE) else{ continue; };
+
+    let distance = rng.random_range(
+      spawner.wave_data.min_spawn_distance.unwrap_or(ROID_SPAWN_DISTANCE) ..
+      spawner.wave_data.max_spawn_distance.unwrap_or(ROID_SPAWN_DISTANCE *1.1)
+    );
+
+    let Some(intersect) = bounds_intersect(target, direction, distance) else{ continue; };
     spawn_writer.write(SpawnMessage { 
       spawn_type: spawner.spawn_type, 
       position: intersect,
@@ -168,6 +174,8 @@ pub struct WaveData{
   y_distribution:Option<f32>,
   x_iterations:Option<u32>,
   y_iterations:Option<u32>,
+  min_spawn_distance:Option<f32>,
+  max_spawn_distance:Option<f32>,
 }
 
 #[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]

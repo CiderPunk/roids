@@ -1,57 +1,56 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{Bounds, InBounds}, game_manager::GameState, movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds::{Bounds, InBounds}, game_manager::{GameState, LevelEntity}, movement::Velocity, scheduling::GameSchedule};
 
 pub struct WarningPlugin;
 
 impl Plugin for WarningPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Update, spawm_warnings.in_set(GameSchedule::EntityUpdates));
+      .add_systems(Update, (spawm_warnings, despawn_warning).in_set(GameSchedule::EntityUpdates));
+        }
+}
+
+#[derive(Component, Default)]
+pub struct Warn(pub Option<Entity>);
+
+
+#[derive(Component)]
+struct Warning(Entity);
+
+
+fn despawn_warning(
+  mut commands: Commands,
+  mut query:Query<&Warn, Added<InBounds>>,
+){
+  for warn in query.iter_mut(){
+    if let Some(warning_entity) = warn.0 {
+      commands.entity(warning_entity).despawn();
+    }
   }
 }
 
-#[derive(Component)]
-pub struct Warn;
-
-
-#[derive(Component)]
-struct Warning{
-  entity:Entity,
-}
-
-
-
 fn spawm_warnings(
   bounds:Single<&Bounds>,
-  query:Query<(Entity, &Warn, &GlobalTransform, &Velocity), (Added<Warn>, Without<InBounds>)>,
+  mut query:Query<(Entity, &mut Warn, &GlobalTransform, &Velocity), (Added<Warn>, Without<InBounds>)>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
 ){
-
-  for (entity, warn, transform, velocity) in query.iter(){
+  for (entity, mut warn, transform, velocity) in query.iter_mut(){
     let intersect = calc_intersect(bounds.half_size, transform.translation(), velocity.0);
     match intersect{
         Some(intersect) => {
           info!("Spawning warning at {:}", intersect);
-    commands.spawn((
-      Warning{
-        entity,
-      },
-      Transform::from_translation(intersect).with_scale(Vec3::splat(10.)),
-
-      SceneRoot(scene_assets.warning_back.clone()),
-      //MeshMaterial3d(scene_assets.bullet_material.clone()),
-      
-      //Mesh3d(scene_assets.bullet.clone()),
-    ));
-
+          let warning_entity = commands.spawn((
+            LevelEntity,
+            Transform::from_translation(intersect).with_scale(Vec3::splat(10.)),
+            SceneRoot(scene_assets.warning_back.clone()),
+          )).id();
+          warn.0 = Some(warning_entity);
         },
         None => (),
     }
-
   }
-
 }
 
 
