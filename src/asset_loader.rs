@@ -22,6 +22,7 @@ pub struct SceneAssets {
   pub ship: Handle<Scene>,
   pub roid1: Handle<Scene>,
   pub flame: Handle<Scene>,
+  pub warning_back: Handle<Scene>,
   pub ufo: Handle<Scene>,
   pub ufo_part_rim: Handle<Scene>,
   pub ufo_part_hub: Handle<Scene>,
@@ -125,6 +126,7 @@ fn extract_assets(
   scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
   scene_assets.ufo_part_hub = gltf.named_scenes["UfoCentre"].clone();
   scene_assets.ufo_part_rim = gltf.named_scenes["UfoRing"].clone();
+  scene_assets.warning_back = gltf.named_scenes["warning"].clone();
 
 info!("Scenes: {:?}", gltf.named_scenes.keys());
 

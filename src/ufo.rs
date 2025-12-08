@@ -2,7 +2,7 @@ use std::{f32::consts::PI, time::Duration};
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp, InBounds}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule, wreckage::SpawnWreckageMessage};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, BoundsWarp, InBounds}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::*, health::Health, level::{SpawnMessage, SpawnType}, movement::{PhysicsObject, Rotation, Velocity}, player::PlayerShip, scheduling::GameSchedule, warning::Warn, wreckage::SpawnWreckageMessage};
 pub struct UfoPlugin;
 
 use bevy_prng::WyRand;
@@ -81,7 +81,7 @@ fn spawn_ufo(
   commands: &mut Commands, 
   scene_assets: SceneAssets,
 ){
-  info!("Spawning UFO");
+  info!("Spawning UFO at {:}", spawn.position);
   commands.spawn((
     LevelTarget,
     GameEntity,
@@ -113,9 +113,9 @@ fn spawn_ufo(
       max: 5.,
       last_hurt_by: None,
     },
+    Warn,
     //PhysicsObject::new(10.0),
   ));
-
 }
 
 fn update_ufos(

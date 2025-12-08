@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-
 use crate::{asset_loader::SceneAssets, game_manager::GameState, player::{LifeEvent, Player, ScoreMessage}, scheduling::GameSchedule};
-
 
 const GAME_UI_FONT_SIZE: f32 = 34.;
 
@@ -152,8 +150,4 @@ fn init_game_ui(
       }
     });
   });
-
-
-
-
 }
