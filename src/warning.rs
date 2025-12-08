@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::f32::consts::PI;
+
+use bevy::{platform::collections::hash_set::Intersection, prelude::*};
 
 use crate::{asset_loader::SceneAssets, bounds::{Bounds, InBounds}, game_manager::{GameState, LevelEntity}, movement::Velocity, scheduling::GameSchedule};
 
@@ -32,24 +34,28 @@ fn despawn_warning(
 
 fn spawm_warnings(
   bounds:Single<&Bounds>,
-  mut query:Query<(Entity, &mut Warn, &GlobalTransform, &Velocity), (Added<Warn>, Without<InBounds>)>,
+  mut query:Query<(&mut Warn, &GlobalTransform, &Velocity), (Added<Warn>, Without<InBounds>)>,
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
 ){
-  for (entity, mut warn, transform, velocity) in query.iter_mut(){
+  for (mut warn, transform, velocity) in query.iter_mut(){
     let intersect = calc_intersect(bounds.half_size, transform.translation(), velocity.0);
-    match intersect{
-        Some(intersect) => {
-          info!("Spawning warning at {:}", intersect);
-          let warning_entity = commands.spawn((
-            LevelEntity,
-            Transform::from_translation(intersect).with_scale(Vec3::splat(10.)),
-            SceneRoot(scene_assets.warning_back.clone()),
-          )).id();
-          warn.0 = Some(warning_entity);
-        },
-        None => (),
+    if intersect.is_none(){
+      continue;
     }
+    let intersect = intersect.unwrap();
+
+    let inset = velocity.0.normalize()* 17.0;
+    let angle = velocity.0.x.atan2(velocity.0.z);
+
+    info!("Spawning warning at {:}", intersect);
+    let warning_entity = commands.spawn((
+      LevelEntity,
+      Transform::from_translation(intersect + inset).with_scale(Vec3::splat(10.)).with_rotation(Quat::from_axis_angle(Vec3::Y, angle + PI)),
+      SceneRoot(scene_assets.warning_back.clone()),
+    )).id();
+    warn.0 = Some(warning_entity);
+    
   }
 }
 
