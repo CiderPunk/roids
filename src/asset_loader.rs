@@ -1,7 +1,8 @@
 use bevy::{asset::LoadState, gltf::{self, GltfMesh}, platform::collections::HashMap, prelude::*, scene};
 use bevy_common_assets::json::JsonAssetPlugin;
 use strum::IntoEnumIterator;
-use crate::{level::LevelCollectionData, warning::{get_path_for_warning_type, WarningType}};
+
+use crate::level::LevelCollectionData;
 
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
 //const SHIELD_SIZE: f32 = 3.;
@@ -33,7 +34,7 @@ pub struct SceneAssets {
   pub ship_shield: Handle<Mesh>,
   pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
-  pub warning_icons: HashMap<WarningType, Handle<Image>>,
+  //pub warning_icons: HashMap<WarningType, Handle<Image>>,
   pub missile: Handle<Scene>,
 }
 
@@ -87,13 +88,14 @@ fn load_assets(
   let level:Handle<LevelCollectionData> = asset_server.load("data/levels.json");
   loading.0.push(level.clone().untyped());
   commands.insert_resource(LevelHandle(level));
-
+/*
   for warn_type in WarningType::iter(){
     let icon_path = get_path_for_warning_type(warn_type);
     let icon_handle: Handle<Image> = asset_server.load(icon_path);
     loading.0.push(icon_handle.clone().untyped());
     scene_assets.warning_icons.insert(warn_type, icon_handle);
-  } 
+  }
+   */ 
 }
 
 fn check_load_state(

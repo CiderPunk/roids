@@ -1,7 +1,7 @@
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule
+  asset_loader::SceneAssets, bounds::{BoundsWarp, InBounds}, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, GameState, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, PhysicsObject, Rotation, Velocity}, player::ScoreMessage, scheduling::GameSchedule, warning::Warn
 };
 use bevy::prelude::*;
 use bevy_prng::WyRand;
@@ -100,12 +100,17 @@ fn check_asteroid_health(
       RoidSize::Small => SpawnType::RoidSmall,
     };
     for _ in 0..2 {
-      spawn_writer.write(SpawnMessage{ spawn_type: next_size, position: transform.translation(), velocity:  velocity.0
+      spawn_writer.write(SpawnMessage{ 
+        spawn_type: next_size, 
+        position: transform.translation(), 
+        velocity:  velocity.0
         + Vec3::new(
           rng.random_range(-10. ..10.),
           0.,
           rng.random_range(-10. ..10.),
-        ), });
+        ),
+        in_bounds: true,
+      });
     }
   }
 }
@@ -151,7 +156,9 @@ fn spawn_roids(
       rng.random_range(-1. ..1.),
     );
 
-    commands.spawn((
+
+    let mut roid = commands.spawn((
+      
       LevelTarget,
       GameEntity,
       LevelEntity,
@@ -176,8 +183,13 @@ fn spawn_roids(
         max: 10.,
         last_hurt_by: None,
       },
+      Warn::new(crate::warning::WarningType::Roid),
       PhysicsObject::new(mass),
-      Acceleration{ acceleration: Vec3::ZERO, max_speed: ROID_MAX_SPEED}
+      Acceleration{ acceleration: Vec3::ZERO, max_speed: ROID_MAX_SPEED},
+      
     ));
+    if spawn.in_bounds{
+      roid.insert(InBounds);
+    }
   }
 }

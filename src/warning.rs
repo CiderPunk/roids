@@ -6,15 +6,10 @@ use crate::{asset_loader::SceneAssets, bounds::{Bounds, InBounds}, game_manager:
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIter)]
 pub enum WarningType{
   Ufo,
- // Roid,
+  Missile,
+  Roid,
 }
 
-pub fn get_path_for_warning_type(warn_type: WarningType) -> &'static str{
-  match warn_type{
-    WarningType::Ufo => "images/ufo.png",
-   // WarningTypes::Roid => "images/roid.png",
-  }
-}
 
 pub struct WarningPlugin;
 

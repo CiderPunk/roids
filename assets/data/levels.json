@@ -1,6 +1,42 @@
 {
   "levels":[
     {
+      "name":"Level 0.5 - Old Grey Missile test",
+      "min_level_time":5.0,
+      "waves":[
+        {
+          "must_complete":true,
+          "wave_type":"Roid",
+          "first_spawn":0.0,
+          "cycle_time":2.0,
+          "cycles":2,
+          "wave_size":1,
+          "min_speed": 20.0,
+          "max_speed":25.0,
+          "x_distribution":0.9,
+          "x_iterations":2,
+          "y_distribution":0.9,
+          "y_iterations":2
+        },
+        {
+          "must_complete":false,
+          "wave_type":"Missile",
+          "first_spawn":2.0,
+          "cycle_time":5.0,
+          "cycles":10,
+          "wave_size":1,
+          "min_speed": 20.0,
+          "max_speed":25.0,
+          "x_distribution":0.9,
+          "x_iterations":1,
+          "y_distribution":0.9,
+          "y_iterations":1,
+          "min_spawn_distance":170.0,
+          "max_spawn_distance":200.0
+        }
+      ]
+    },
+    {
       "name":"Level 1 - Keep it simple",
       "min_level_time":5.2,
       "waves":[

@@ -21,6 +21,8 @@ mod ufo;
 mod level;
 mod wreckage;
 mod warning;
+mod missile;
+mod targeting;
 
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 
@@ -28,7 +30,7 @@ use bevy_prng::WyRand;
 use bevy_rand::plugin::EntropyPlugin;
 
 use crate::{
-  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, level::LevelPlugin, lights::LightPlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, starfield::StarfieldPlugin, ufo::UfoPlugin, warning::WarningPlugin, wreckage::WreckagePlugin
+  asset_loader::AssetLoaderPlugin, bounds::BoundsPlugin, bullet::BulletPlugin, camera::CameraPlugin, collision::CollisionPlugin, effect_sprite::EffectSpritePlugin, game_manager::{GameManagerPlugin, GameState}, game_ui::GameUiPlugin, health::HealthPlugin, input::GameInputPlugin, level::LevelPlugin, lights::LightPlugin, missile::MissilePlugin, modal_screen::ModalScreenPlugin, movement::MovementPlugin, pause_screen::PauseScreenPlugin, player::PlayerPlugin, roid::RoidPlugin, scheduling::SchedulingPlugin, shaders::ShadersPlugin, starfield::StarfieldPlugin, targeting::TargetingPlugin, ufo::UfoPlugin, warning::WarningPlugin, wreckage::WreckagePlugin
 };
 
 
@@ -87,6 +89,10 @@ pub fn run_game() {
       UfoPlugin,
       WreckagePlugin,
       WarningPlugin,
+    ))
+    .add_plugins((
+      MissilePlugin,
+      TargetingPlugin,
     ))
     .add_systems(PreUpdate, shutdown_detect)
     //.add_systems(PreUpdate, test_sphere)
