@@ -113,7 +113,7 @@ fn spawn_ufo(
       max: 5.,
       last_hurt_by: None,
     },
-    Warn(None),
+    Warn::new(crate::warning::WarningType::Ufo),
     //PhysicsObject::new(10.0),
   ));
 }

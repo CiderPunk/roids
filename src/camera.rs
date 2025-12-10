@@ -58,7 +58,7 @@ fn spawn_camera(mut commands: Commands) {
     },
     Camera3d::default(),
     Camera {
-      order: 0,
+      order: 1,
       ..default()
     },
     Transform::from_translation(CAMERA_START_LOCATION).looking_at(Vec3::ZERO, Vec3::Z),
@@ -68,7 +68,7 @@ fn spawn_camera(mut commands: Commands) {
     UiCamera,
     Camera2d::default(),
     Camera {
-      order: 1,
+      order: 0,
       ..default()
     },
   ));

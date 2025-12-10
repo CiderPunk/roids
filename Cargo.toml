@@ -18,6 +18,8 @@ rand_core = "0.9"
 bevy_rand = "0.12"
 bevy_prng = { version = "0.12", features = ["rand_chacha", "wyrand"] }
 
+strum = "0.26"
+strum_macros = "0.26"
 
 bevy_common_assets= {version = "0.14.0", features = ["json"]}
 serde = "1"
