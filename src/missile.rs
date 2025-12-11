@@ -8,7 +8,7 @@ pub struct MissilePlugin;
 impl Plugin for MissilePlugin{
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Update, (spawn_missiles, update_missiles).in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, (spawn_missiles.in_set(GameSchedule::EntityUpdates),  update_missiles.in_set(GameSchedule::PreEntityUpdates)));
     ;
   }
 }
@@ -31,10 +31,16 @@ fn update_missiles(
       continue;
     }
     if let Ok(target_transform) = target_query.get(targeter.target.unwrap()){
+
+      info!("Missile at {:} tracking target at {:}", transform.translation, target_transform.translation());
       let target_vector = target_transform.translation() - transform.translation;
       let target_angle = target_vector.x.atan2(target_vector.z);
 
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
+
+      info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
+
+
       let mut diff = target_angle - current_angle;
       if diff < -PI{
         diff += PI * 2.;
@@ -47,13 +53,16 @@ fn update_missiles(
       if turn.abs() > diff.abs(){
         turn = diff;
       }
-      transform.rotate_local_y(turn);
 
+      info!("Missile turning {:} by {:}", diff, turn);
+
+      transform.rotate_local_y(turn);
+/*
       acceleration.acceleration = Vec3::new(
         MISSILE_ACCELERATION * current_angle.acosh(), 
         0., 
-        MISSILE_ACCELERATION * current_angle.asinh())
-
+        MISSILE_ACCELERATION * current_angle.asinh());
+ */    
     }
   }
 }

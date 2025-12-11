@@ -35,7 +35,7 @@ impl Plugin for PlayerPlugin {
     .add_systems(
       Update,
       (
-        (update_player_movement, update_player_action, player_shoot).in_set(GameSchedule::ActionUserInput),
+        (update_player_movement, update_player_action, player_shoot).in_set(GameSchedule::PreEntityUpdates),
         (update_score, update_invulnerable, create_shield, update_shield, animate_flame).in_set(GameSchedule::EntityUpdates),
         check_player_health.in_set(GameSchedule::PreDespawnEntities),
       ),
