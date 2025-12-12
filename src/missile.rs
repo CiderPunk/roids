@@ -18,8 +18,8 @@ pub struct Missile{
   angle:f32,
 }
 
-const MISSILE_ACCELERATION: f32 = 0.2;
-const MISSILE_TURN_RATE:f32 = 2.;
+const MISSILE_ACCELERATION: f32 = 50.;
+const MISSILE_TURN_RATE:f32 = 3.;
 
 fn update_missiles(
   mut query:Query<(&Targeter, &mut Acceleration, &mut Transform), (With<Missile>, With<InBounds>)>,
@@ -32,13 +32,13 @@ fn update_missiles(
     }
     if let Ok(target_transform) = target_query.get(targeter.target.unwrap()){
 
-      info!("Missile at {:} tracking target at {:}", transform.translation, target_transform.translation());
+      //info!("Missile at {:} tracking target at {:}", transform.translation, target_transform.translation());
       let target_vector = target_transform.translation() - transform.translation;
       let target_angle = target_vector.x.atan2(target_vector.z);
 
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
 
-      info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
+      //info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
 
 
       let mut diff = target_angle - current_angle;
@@ -54,15 +54,16 @@ fn update_missiles(
         turn = diff;
       }
 
-      info!("Missile turning {:} by {:}", diff, turn);
+      //info!("Missile turning {:} by {:}", diff, turn);
 
       transform.rotate_local_y(turn);
-/*
+
+
       acceleration.acceleration = Vec3::new(
-        MISSILE_ACCELERATION * current_angle.acosh(), 
+        MISSILE_ACCELERATION * current_angle.sin(), 
         0., 
-        MISSILE_ACCELERATION * current_angle.asinh());
- */    
+        MISSILE_ACCELERATION * current_angle.cos());
+ 
     }
   }
 }
@@ -98,12 +99,12 @@ fn spawn_missile(
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(1.)).with_rotation(Quat::from_axis_angle(Vec3::Y, init_angle)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.missile.clone()),
-    Acceleration{ acceleration: Vec3::ZERO, max_speed: 50. },
+    Acceleration{ acceleration: Vec3::ZERO, max_speed: 40. },
     Collider {
       collison_group: CollisionFlags::Enemy,
       collision_mask: CollisionFlags::Player | CollisionFlags::Asteroid,
       owner: None,
-      radius: 1.5,
+      radius: 0.75,
       damage: -20.0,
     },
 
