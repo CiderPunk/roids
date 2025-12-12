@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
+  asset_loader::SceneAssets, bounds::{BoundsWarp, InBounds}, bullet::ShootMessage, collision::{Collider, CollisionFlags}, effect_sprite::{EffectSpriteMessage, EffectSpriteType}, game_manager::{GameEntity, GameState}, health::Health, input::{InputEventAction, InputEventType, InputMovementMessage, InputTriggerMessage}, movement::{Acceleration, Damping, Rotation, Velocity}, scheduling::GameSchedule, shaders::ShaderMaterials
 };
 
 const PLAYER_START_TRANSLATION: Vec3 = Vec3::new(0., 0., 0.);
@@ -35,7 +35,7 @@ impl Plugin for PlayerPlugin {
     .add_systems(
       Update,
       (
-        (update_player_movement, update_player_action, player_shoot).in_set(GameSchedule::ActionUserInput),
+        (update_player_movement, update_player_action, player_shoot).in_set(GameSchedule::PreEntityUpdates),
         (update_score, update_invulnerable, create_shield, update_shield, animate_flame).in_set(GameSchedule::EntityUpdates),
         check_player_health.in_set(GameSchedule::PreDespawnEntities),
       ),
@@ -190,12 +190,13 @@ commands.spawn((
         min_speed: PLAYER_MIN_SPEED,
     },
     BoundsWarp::default(),
+    InBounds,
     Collider {
       collison_group: CollisionFlags::Player,
       collision_mask: CollisionFlags::Enemy | CollisionFlags::Asteroid,
       owner: None,
       radius: PLAYER_COLLLISION_RADIUS,
-      damage: 0.,
+      damage: -10.,
     },
     Health {
       value: 10.,
@@ -218,6 +219,7 @@ fn create_shield(
 ) {
   for entity in query.iter() {
     commands.spawn((
+      GameEntity,
       Shield{ owner: entity, repulse_force: PLAYER_SHIELD_REPULSE_FORCE},
       Mesh3d(scene_assets.ship_shield.clone()),
       MeshMaterial3d(shaders.shield.clone()),

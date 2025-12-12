@@ -26,6 +26,10 @@ pub struct GameCamera{
   limits:Aabb2d,
 }
 
+#[derive(Component)]
+pub struct UiCamera;
+
+
 fn reset_camera(
   mut camera_transform:Single<&mut Transform, With<GameCamera>>,
 ){
@@ -54,10 +58,19 @@ fn spawn_camera(mut commands: Commands) {
     },
     Camera3d::default(),
     Camera {
-      order: 0,
+      order: 1,
       ..default()
     },
     Transform::from_translation(CAMERA_START_LOCATION).looking_at(Vec3::ZERO, Vec3::Z),
+  ));
+
+  commands.spawn((
+    UiCamera,
+    Camera2d::default(),
+    Camera {
+      order: 0,
+      ..default()
+    },
   ));
 }
 

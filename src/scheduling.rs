@@ -6,7 +6,7 @@ use crate::game_manager::PauseState;
 pub enum GameSchedule {
   HealthAdjust,
   ReadUserInput,
-  ActionUserInput,
+  PreEntityUpdates,
   EntityUpdates,
   CollisionDetection,
   DespawnEntities,
@@ -26,7 +26,7 @@ impl Plugin for SchedulingPlugin {
           GameSchedule::PreDespawnEntities,
           GameSchedule::DespawnEntities,
           GameSchedule::ReadUserInput,
-          GameSchedule::ActionUserInput,
+          GameSchedule::PreEntityUpdates,
           GameSchedule::EntityUpdates,
           GameSchedule::PostEntityUpdates,
         )

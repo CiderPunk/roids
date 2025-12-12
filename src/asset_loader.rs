@@ -1,5 +1,7 @@
-use bevy::{asset::LoadState, prelude::*, scene};
+use bevy::{asset::LoadState, gltf::{self, GltfMesh}, platform::collections::HashMap, prelude::*, scene};
 use bevy_common_assets::json::JsonAssetPlugin;
+use strum::IntoEnumIterator;
+
 use crate::level::LevelCollectionData;
 
 const BULLET_COLOUR: LinearRgba = LinearRgba::new(2., 1.8, 0.2, 1.0);
@@ -22,6 +24,7 @@ pub struct SceneAssets {
   pub ship: Handle<Scene>,
   pub roid1: Handle<Scene>,
   pub flame: Handle<Scene>,
+  pub warning_back: Handle<Scene>,
   pub ufo: Handle<Scene>,
   pub ufo_part_rim: Handle<Scene>,
   pub ufo_part_hub: Handle<Scene>,
@@ -31,6 +34,8 @@ pub struct SceneAssets {
   pub ship_shield: Handle<Mesh>,
   pub shield_material: Handle<StandardMaterial>,
   pub ship_icon: Handle<Image>,
+  //pub warning_icons: HashMap<WarningType, Handle<Image>>,
+  pub missile: Handle<Scene>,
 }
 
 #[derive(Resource)]
@@ -83,8 +88,14 @@ fn load_assets(
   let level:Handle<LevelCollectionData> = asset_server.load("data/levels.json");
   loading.0.push(level.clone().untyped());
   commands.insert_resource(LevelHandle(level));
-  
-  //scene_assets.level_data = level;
+/*
+  for warn_type in WarningType::iter(){
+    let icon_path = get_path_for_warning_type(warn_type);
+    let icon_handle: Handle<Image> = asset_server.load(icon_path);
+    loading.0.push(icon_handle.clone().untyped());
+    scene_assets.warning_icons.insert(warn_type, icon_handle);
+  }
+   */ 
 }
 
 fn check_load_state(
@@ -115,18 +126,19 @@ fn extract_assets(
   game_font: Res<GameFont>,
   mut next_state: ResMut<NextState<AssetState>>,
 ) {
-  let Some(gltf) = gltf_assets.get(&roids_scene.0) else {
+  let Some(gltf_file) = gltf_assets.get(&roids_scene.0) else {
     return;
   };
   info!("extracting assets");
-  scene_assets.ship = gltf.named_scenes["Ship"].clone();
-  scene_assets.roid1 = gltf.named_scenes["Roid1"].clone();
-  scene_assets.flame = gltf.named_scenes["Flame"].clone();
-  scene_assets.ufo = gltf.named_scenes["Ufo"].clone();
-  scene_assets.ufo_part_hub = gltf.named_scenes["UfoCentre"].clone();
-  scene_assets.ufo_part_rim = gltf.named_scenes["UfoRing"].clone();
-
-info!("Scenes: {:?}", gltf.named_scenes.keys());
+  scene_assets.ship = gltf_file.named_scenes["Ship"].clone();
+  scene_assets.roid1 = gltf_file.named_scenes["Roid1"].clone();
+  scene_assets.flame = gltf_file.named_scenes["Flame"].clone();
+  scene_assets.ufo = gltf_file.named_scenes["Ufo"].clone();
+  scene_assets.ufo_part_hub = gltf_file.named_scenes["UfoCentre"].clone();
+  scene_assets.ufo_part_rim = gltf_file.named_scenes["UfoRing"].clone();
+  scene_assets.warning_back = gltf_file.named_scenes["warning"].clone();
+  scene_assets.missile = gltf_file.named_scenes["missile"].clone();
+  info!("Scenes: {:?}", gltf_file.named_scenes.keys());
 
   scene_assets.bullet = meshes.add(
     Sphere::default().mesh().ico(2).unwrap()

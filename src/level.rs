@@ -45,6 +45,8 @@ fn update_spawners(
     if !(spawner.start_time.just_finished() || spawner.cycle_time.just_finished()) { continue; }
     //spawn a wave
     spawner.wave_count -= 1;
+
+    info!("Spawning wave {:?}", spawner.spawn_type);
     spawn_wave(&mut spawn_writer, spawner.clone(), bounds.half_size, &mut *rng);
 
     if spawner.wave_count == 0{
@@ -77,11 +79,19 @@ fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveS
     let angle:f32 = rng.random_range(direction_range);
 
     let direction = Vec3::new(angle.cos(), 0., angle.sin());
-    let Some(intersect) = bounds_intersect(target, direction, ROID_SPAWN_DISTANCE) else{ continue; };
+
+    let distance = rng.random_range(
+      spawner.wave_data.min_spawn_distance.unwrap_or(ROID_SPAWN_DISTANCE) ..
+      spawner.wave_data.max_spawn_distance.unwrap_or(ROID_SPAWN_DISTANCE *1.1)
+    );
+
+    let Some(intersect) = bounds_intersect(target, direction, distance) else{ continue; };
     spawn_writer.write(SpawnMessage { 
       spawn_type: spawner.spawn_type, 
       position: intersect,
-      velocity: -direction * rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed) });
+      velocity: -direction * rng.random_range(spawner.wave_data.min_speed .. spawner.wave_data.max_speed),
+      in_bounds:false,
+    });
   }
 }
 
@@ -168,14 +178,17 @@ pub struct WaveData{
   y_distribution:Option<f32>,
   x_iterations:Option<u32>,
   y_iterations:Option<u32>,
+  min_spawn_distance:Option<f32>,
+  max_spawn_distance:Option<f32>,
 }
 
-#[derive(serde::Deserialize, Asset, TypePath, Clone, Copy)]
+#[derive(serde::Deserialize, Asset, TypePath, Clone, Copy, Debug)]
 pub enum SpawnType{
   Roid,
   RoidSmall,
   RoidMedium,
   Ufo,
+  Missile,
 }
 
 #[derive(Message)]
@@ -183,6 +196,7 @@ pub struct SpawnMessage{
   pub spawn_type:SpawnType,
   pub position:Vec3,
   pub velocity:Vec3,
+  pub in_bounds:bool,
 }
 
 #[derive(Component, Clone)]

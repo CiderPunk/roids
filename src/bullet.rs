@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, bounds::BoundsWarp, effect_sprite::EffectSpriteMessage,
+  asset_loader::SceneAssets, bounds::{BoundsWarp, InBounds}, effect_sprite::EffectSpriteMessage,
   game_manager::GameEntity, movement::Velocity, scheduling::GameSchedule,
 };
 
@@ -37,6 +37,7 @@ fn do_shooting(
     let transform = Transform::from_translation(start).with_scale(Vec3::splat(scale));
     commands.spawn((
       GameEntity,
+      InBounds,
       BoundsWarp::default(),
       Bullet {
         damage,
