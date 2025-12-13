@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
 pub struct MissilePlugin;
 
 impl Plugin for MissilePlugin{
@@ -56,7 +56,15 @@ fn update_missiles(
 
       //info!("Missile turning {:} by {:}", diff, turn);
 
-      transform.rotate_local_y(turn);
+      //transform.rotate_local_y(turn);
+      //transform.rotate_local_z( 5.0 * time.delta_secs());
+
+
+      transform.rotation = Quat::from_axis_angle(Vec3::Y, current_angle + turn);
+      
+      
+
+      
 
 
       acceleration.acceleration = Vec3::new(
@@ -93,7 +101,7 @@ fn spawn_missile(
     LevelTarget,
     GameEntity,
     LevelEntity,
-    Targeter{ target:None },
+    Targeter::new(),
     Missile{ angle:init_angle, },
     BoundsDespawn,
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(1.)).with_rotation(Quat::from_axis_angle(Vec3::Y, init_angle)),
