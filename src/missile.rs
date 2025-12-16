@@ -20,7 +20,7 @@ pub struct Missile{
 
 const MISSILE_ACCELERATION: f32 = 20.;
 const MISSILE_TURN_RATE:f32 = 3.;
-const NAVIGATION_GAIN_N: f32 = 3.;
+const NAVIGATION_GAIN_N: f32 = 6.;
 
 
 fn update_missiles(
@@ -34,25 +34,28 @@ fn update_missiles(
     }
     if let Ok((target_transform, target_velocity)) = target_query.get(targeter.target.unwrap()){
 
-      let relative_position = target_transform.translation() - transform.translation;
-      let relative_velocity =  target_velocity.0 - velocity.0;
+      let relative_position = target_transform.translation().xz() - transform.translation.xz();
+      let relative_velocity =  target_velocity.0.xz() - velocity.0.xz();
+      
+      let range = relative_position.length();
+      let normal_target_vector = relative_position / range;
+      let closing_velocity = -relative_velocity.dot(normal_target_vector); // Speed at which gap is closing
+      
+      // Calculate Time-To-Go (TTG)
+      let time_to_go = if closing_velocity > 0.0 {
+        range / closing_velocity
+      } else {
+          // If the target is moving away, use a max value or handle as pure pursuit
+          10.0 // Arbitrary max time, adjust as needed
+      };
 
-      // Closing velocity (scalar)
-      let closing_velocity = -relative_velocity.dot(relative_position.normalize());
+      let zero_effort_miss = relative_position + relative_velocity * time_to_go;
+      
+      let command_acceleration = NAVIGATION_GAIN_N * zero_effort_miss / (time_to_go * time_to_go);
+      let optimal_vector = velocity.xz() + command_acceleration * time.delta_secs();
 
-      //2D cross product to get angle rate
-      let angle_rate = (relative_position.x * relative_velocity.z - relative_position.z * relative_velocity.x) / relative_position.length_squared();
-      let normal = Vec3::new(-relative_position.z, 0.0, relative_position.x).normalize();
-      //let angle_rate = relative_position.cross(relative_velocity) / relative_position.length_squared();
-      let optimal_vector = NAVIGATION_GAIN_N * closing_velocity * angle_rate * normal;
-
-      //let optimal_vector = NAVIGATION_GAIN_N * relative_velocity * angle_rate;
-
-      let target_angle = optimal_vector.x.atan2(optimal_vector.z);
+      let target_angle = optimal_vector.x.atan2(optimal_vector.y);
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
-
-      //info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
-
 
       let mut diff = target_angle - current_angle;
       if diff < -PI{
