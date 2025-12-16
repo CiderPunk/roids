@@ -18,24 +18,37 @@ pub struct Missile{
   angle:f32,
 }
 
-const MISSILE_ACCELERATION: f32 = 50.;
+const MISSILE_ACCELERATION: f32 = 20.;
 const MISSILE_TURN_RATE:f32 = 3.;
+const NAVIGATION_GAIN_N: f32 = 3.;
+
 
 fn update_missiles(
-  mut query:Query<(&Targeter, &mut Acceleration, &mut Transform), (With<Missile>, With<InBounds>)>,
-  target_query:Query<&GlobalTransform>,
+  mut query:Query<(&Targeter, &mut Acceleration, &mut Transform, &Velocity), (With<Missile>, With<InBounds>)>,
+  target_query:Query<(&GlobalTransform, &Velocity)>,
   time:Res<Time>,
 ){
-  for ( targeter, mut acceleration, mut transform) in query.iter_mut(){
+  for ( targeter, mut acceleration, mut transform, velocity) in query.iter_mut(){
     if targeter.target.is_none(){
       continue;
     }
-    if let Ok(target_transform) = target_query.get(targeter.target.unwrap()){
+    if let Ok((target_transform, target_velocity)) = target_query.get(targeter.target.unwrap()){
 
-      //info!("Missile at {:} tracking target at {:}", transform.translation, target_transform.translation());
-      let target_vector = target_transform.translation() - transform.translation;
-      let target_angle = target_vector.x.atan2(target_vector.z);
+      let relative_position = target_transform.translation() - transform.translation;
+      let relative_velocity =  target_velocity.0 - velocity.0;
 
+      // Closing velocity (scalar)
+      let closing_velocity = -relative_velocity.dot(relative_position.normalize());
+
+      //2D cross product to get angle rate
+      let angle_rate = (relative_position.x * relative_velocity.z - relative_position.z * relative_velocity.x) / relative_position.length_squared();
+      let normal = Vec3::new(-relative_position.z, 0.0, relative_position.x).normalize();
+      //let angle_rate = relative_position.cross(relative_velocity) / relative_position.length_squared();
+      let optimal_vector = NAVIGATION_GAIN_N * closing_velocity * angle_rate * normal;
+
+      //let optimal_vector = NAVIGATION_GAIN_N * relative_velocity * angle_rate;
+
+      let target_angle = optimal_vector.x.atan2(optimal_vector.z);
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
 
       //info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
@@ -49,23 +62,10 @@ fn update_missiles(
         diff -= PI * 2.;
       }
 
-      let mut turn = MISSILE_TURN_RATE * time.delta_secs() * diff.signum();
-      if turn.abs() > diff.abs(){
-        turn = diff;
-      }
-
-      //info!("Missile turning {:} by {:}", diff, turn);
-
-      //transform.rotate_local_y(turn);
-      //transform.rotate_local_z( 5.0 * time.delta_secs());
-
+      let max_turn_rate = MISSILE_TURN_RATE * time.delta_secs();
+      let turn = diff.clamp(-max_turn_rate, max_turn_rate);
 
       transform.rotation = Quat::from_axis_angle(Vec3::Y, current_angle + turn);
-      
-      
-
-      
-
 
       acceleration.acceleration = Vec3::new(
         MISSILE_ACCELERATION * current_angle.sin(), 
