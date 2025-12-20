@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{math::NormedVectorSpace, prelude::*};
 
 use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
 pub struct MissilePlugin;
@@ -36,25 +36,14 @@ fn update_missiles(
 
       let relative_position = target_transform.translation().xz() - transform.translation.xz();
       let relative_velocity =  target_velocity.0.xz() - velocity.0.xz();
-      
       let range = relative_position.length();
-      let normal_target_vector = relative_position / range;
-      let closing_velocity = -relative_velocity.dot(normal_target_vector); // Speed at which gap is closing
-      
-      // Calculate Time-To-Go (TTG)
-      let time_to_go = if closing_velocity > 0.0 {
-        range / closing_velocity
-      } else {
-          // If the target is moving away, use a max value or handle as pure pursuit
-          10.0 // Arbitrary max time, adjust as needed
-      };
+      let los = relative_position / range;
+      let closing_velocity = -relative_velocity.dot(los);
+      let time_to_intercept = if closing_velocity <= 0.{ 1. } else { range / closing_velocity}.clamp(0.,1.);
 
-      let zero_effort_miss = relative_position + relative_velocity * time_to_go;
+      let target_vector = relative_position + relative_velocity * time_to_intercept;
       
-      let command_acceleration = NAVIGATION_GAIN_N * zero_effort_miss / (time_to_go * time_to_go);
-      let optimal_vector = velocity.xz() + command_acceleration * time.delta_secs();
-
-      let target_angle = optimal_vector.x.atan2(optimal_vector.y);
+      let target_angle = target_vector.x.atan2(target_vector.y);
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
 
       let mut diff = target_angle - current_angle;
@@ -68,12 +57,8 @@ fn update_missiles(
       let max_turn_rate = MISSILE_TURN_RATE * time.delta_secs();
       let turn = diff.clamp(-max_turn_rate, max_turn_rate);
 
-      transform.rotation = Quat::from_axis_angle(Vec3::Y, current_angle + turn);
-
-      acceleration.acceleration = Vec3::new(
-        MISSILE_ACCELERATION * current_angle.sin(), 
-        0., 
-        MISSILE_ACCELERATION * current_angle.cos());
+      transform.rotation = Quat::from_rotation_y(current_angle + turn);
+      acceleration.acceleration = Vec3::new(current_angle.sin() * MISSILE_ACCELERATION, 0., current_angle.cos() * MISSILE_ACCELERATION);
  
     }
   }
