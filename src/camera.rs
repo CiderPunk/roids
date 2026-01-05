@@ -1,4 +1,4 @@
-use bevy::{math::bounding::Aabb2d, prelude::*, window::WindowResized};
+use bevy::{camera, math::bounding::Aabb2d, prelude::*, window::WindowResized};
 
 use crate::{bounds::Bounds, game_manager::GameState, player::PlayerShip, scheduling::GameSchedule};
 
@@ -11,9 +11,27 @@ impl Plugin for CameraPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_message::<CameraBoundsChangeMessage>()
+      .add_message::<CameraEffectMessage>()
       .add_systems(Startup, spawn_camera)
-      .add_systems(Update, (on_resize, update_camera_bounds, follow_player.in_set(GameSchedule::EntityUpdates) ))
+      .add_systems(Update, (on_resize, update_camera_bounds, (camera_effects, follow_player).in_set(GameSchedule::EntityUpdates)))
       .add_systems(OnEnter(GameState::StartScreen), reset_camera);
+  }
+}
+
+
+
+#[derive(Message)]
+pub struct CameraEffectMessage{
+  location:Vec3,
+  magnitude:f32,
+}
+
+impl CameraEffectMessage{
+  pub fn new(location:Vec3, magnitude:f32) -> Self{
+    CameraEffectMessage{
+      location,
+      magnitude,
+    }
   }
 }
 
@@ -49,6 +67,25 @@ fn  follow_player(
     camera_transform.translation.z = camera_pos.y;
   }
 }
+
+
+fn camera_effects(
+  mut ev_camera_effect_reader:MessageReader<CameraEffectMessage>,
+  mut camera_single:Single<&mut Transform, With<GameCamera>>,
+){
+
+  let mut camera_transform = camera_single.into_inner();
+  for camera_effect in ev_camera_effect_reader.read(){
+    // Example effect: small random shake
+    let shake_amount = 2.0;
+    let offset_x = (rand::random::<f32>() - 0.5) * shake_amount;
+    let offset_z = (rand::random::<f32>() - 0.5) * shake_amount;
+    camera_transform.translation.x += offset_x;
+    camera_transform.translation.z += offset_z;
+  }
+}
+
+
 
 
 fn spawn_camera(mut commands: Commands) {
