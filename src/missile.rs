@@ -20,7 +20,6 @@ pub struct Missile{
 
 const MISSILE_ACCELERATION: f32 = 20.;
 const MISSILE_TURN_RATE:f32 = 3.;
-const NAVIGATION_GAIN_N: f32 = 6.;
 const MISSILE_MAX_SPEED: f32 = 40.;
 
 

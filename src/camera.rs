@@ -22,8 +22,8 @@ impl Plugin for CameraPlugin {
 
 #[derive(Message)]
 pub struct CameraEffectMessage{
-  location:Vec3,
-  magnitude:f32,
+  pub location:Vec3,
+  pub magnitude:f32,
 }
 
 impl CameraEffectMessage{
@@ -47,6 +47,11 @@ pub struct GameCamera{
 #[derive(Component)]
 pub struct UiCamera;
 
+#[derive(Component, Default)]
+pub struct CameraEffect{
+  offset:Vec3,
+}
+
 
 fn reset_camera(
   mut camera_transform:Single<&mut Transform, With<GameCamera>>,
@@ -56,37 +61,37 @@ fn reset_camera(
 }
 
 fn  follow_player(
-  player_query:Query<&GlobalTransform, With<PlayerShip>>,
-  camera_single:Single<(&GameCamera, &mut Transform)>,
+  player_transform:Single<&GlobalTransform, With<PlayerShip>>,
+  camera_single:Single<(&GameCamera, &CameraEffect, &mut Transform)>,
 ){
-  let (game_camera, mut camera_transform) = camera_single.into_inner(); 
-  for player_transform in player_query{
-    let player_pos = Vec2::new(player_transform.translation().x, player_transform.translation().z);
-    let camera_pos = game_camera.limits.closest_point(player_pos);
-    camera_transform.translation.x = camera_pos.x;
-    camera_transform.translation.z = camera_pos.y;
-  }
+  let (game_camera, camera_effect, mut camera_transform) = camera_single.into_inner(); 
+  let player_pos = Vec2::new(player_transform.translation().x, player_transform.translation().z);
+  let camera_pos = game_camera.limits.closest_point(player_pos);
+  camera_transform.translation.x = camera_pos.x;
+  camera_transform.translation.z = camera_pos.y;
+  camera_transform.translation += camera_effect.offset;
 }
 
 
 fn camera_effects(
   mut ev_camera_effect_reader:MessageReader<CameraEffectMessage>,
-  mut camera_single:Single<&mut Transform, With<GameCamera>>,
+  camera_single:Single<(&mut CameraEffect, &GlobalTransform)>,
 ){
+  let (mut camera_effect, camera_transform) = camera_single.into_inner();
 
-  let mut camera_transform = camera_single.into_inner();
-  for camera_effect in ev_camera_effect_reader.read(){
+  for effect in ev_camera_effect_reader.read(){
     // Example effect: small random shake
-    let shake_amount = 2.0;
-    let offset_x = (rand::random::<f32>() - 0.5) * shake_amount;
-    let offset_z = (rand::random::<f32>() - 0.5) * shake_amount;
-    camera_transform.translation.x += offset_x;
-    camera_transform.translation.z += offset_z;
+    let vector_to_effect = camera_transform.translation() - effect.location;
+    let distance = vector_to_effect.length();
+    let normalized_direction = if distance > 0.0 {
+      vector_to_effect / distance
+    } else {
+      Vec3::ZERO
+    };
+    let shake_amount = effect.magnitude / (1.0 + distance * 0.1);
+    camera_effect.offset += normalized_direction * shake_amount;
   }
 }
-
-
-
 
 fn spawn_camera(mut commands: Commands) {
   commands.spawn((
@@ -99,6 +104,7 @@ fn spawn_camera(mut commands: Commands) {
       ..default()
     },
     Transform::from_translation(CAMERA_START_LOCATION).looking_at(Vec3::ZERO, Vec3::Z),
+    CameraEffect{ offset:Vec3::ZERO },
   ));
 
   commands.spawn((

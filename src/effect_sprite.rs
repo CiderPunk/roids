@@ -9,9 +9,7 @@ use bevy_rand::global::GlobalRng;
 use rand::Rng;
 
 use crate::{
-  asset_loader::AssetsLoading,
-  game_manager::GameEntity,
-  movement::Velocity,
+  asset_loader::AssetsLoading, camera::CameraEffectMessage, game_manager::GameEntity, movement::Velocity
 };
 pub struct EffectSpritePlugin;
 const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv.wgsl";
@@ -204,6 +202,7 @@ fn create_quad() -> Mesh {
 fn spawn_effect_sprites(
   mut commands: Commands,
   mut msg_effect_reader: MessageReader<EffectSpriteMessage>,
+  mut msg_camera_effect_writer: MessageWriter<CameraEffectMessage>,
   mesh: Res<EffectQuad>,
   effects: Res<EffectCollection>,
   time: Res<Time>,
@@ -213,6 +212,10 @@ fn spawn_effect_sprites(
     let Some(effect) = effects.0.get(&sprite.effect) else {
       continue;
     };
+
+    //lets get the camera shaking
+    msg_camera_effect_writer.write(CameraEffectMessage::new(sprite.translation,0.5 * sprite.scale));
+
 
     let transform = Transform::from_translation(sprite.translation + Vec3::new(0., rng.random_range(0.0 .. 0.3), 0.))
       .with_scale(Vec3::splat(sprite.scale))
