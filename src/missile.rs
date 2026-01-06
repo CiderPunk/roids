@@ -21,6 +21,7 @@ pub struct Missile{
 const MISSILE_ACCELERATION: f32 = 20.;
 const MISSILE_TURN_RATE:f32 = 3.;
 const NAVIGATION_GAIN_N: f32 = 6.;
+const MISSILE_MAX_SPEED: f32 = 40.;
 
 
 fn update_missiles(
@@ -37,11 +38,9 @@ fn update_missiles(
       let relative_position = target_transform.translation().xz() - transform.translation.xz();
       let relative_velocity =  target_velocity.0.xz() - velocity.0.xz();
       let range = relative_position.length();
-      let los = relative_position / range;
-      let closing_velocity = -relative_velocity.dot(los);
-      let time_to_intercept = if closing_velocity <= 0.{ 1. } else { range / closing_velocity}.clamp(0.,1.);
 
-      let target_vector = relative_position + relative_velocity * time_to_intercept;
+      let optimal_time = range / MISSILE_MAX_SPEED;
+      let target_vector = relative_position + relative_velocity * optimal_time;
       
       let target_angle = target_vector.x.atan2(target_vector.y);
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
@@ -85,7 +84,8 @@ fn spawn_missile(
   let init_angle = spawn.velocity.x.atan2(spawn.velocity.z);
 
   info!("Spawning Missiles at {:}", spawn.position);
-  commands.spawn((
+
+commands.spawn((
     LevelTarget,
     GameEntity,
     LevelEntity,
@@ -95,7 +95,7 @@ fn spawn_missile(
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(1.)).with_rotation(Quat::from_axis_angle(Vec3::Y, init_angle)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.missile.clone()),
-    Acceleration{ acceleration: Vec3::ZERO, max_speed: 40. },
+    Acceleration{ acceleration: Vec3::ZERO, max_speed: MISSILE_MAX_SPEED },
     Collider {
       collison_group: CollisionFlags::Enemy,
       collision_mask: CollisionFlags::Player | CollisionFlags::Asteroid,
