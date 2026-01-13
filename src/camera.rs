@@ -69,6 +69,7 @@ fn  follow_player(
   let camera_pos = game_camera.limits.closest_point(player_pos);
   camera_transform.translation.x = camera_pos.x;
   camera_transform.translation.z = camera_pos.y;
+  camera_transform.translation.y = CAMERA_START_LOCATION.y;
   camera_transform.translation += camera_effect.offset;
 }
 
@@ -76,11 +77,17 @@ fn  follow_player(
 fn camera_effects(
   mut ev_camera_effect_reader:MessageReader<CameraEffectMessage>,
   camera_single:Single<(&mut CameraEffect, &GlobalTransform)>,
+  time:Res<Time>,
 ){
+
   let (mut camera_effect, camera_transform) = camera_single.into_inner();
 
+
+  camera_effect.offset *= 1.0 - (time.delta_secs() * 0.1); // Dampen the effect over time 
+
   for effect in ev_camera_effect_reader.read(){
-    // Example effect: small random shake
+    info!("Camera effect at {:} magnitude {:}", effect.location, effect.magnitude);
+        // Example effect: small random shake
     let vector_to_effect = camera_transform.translation() - effect.location;
     let distance = vector_to_effect.length();
     let normalized_direction = if distance > 0.0 {
@@ -88,9 +95,10 @@ fn camera_effects(
     } else {
       Vec3::ZERO
     };
-    let shake_amount = effect.magnitude / (1.0 + distance * 0.1);
+    let shake_amount = effect.magnitude * 10. / (1.0 + distance * 0.5);
     camera_effect.offset += normalized_direction * shake_amount;
   }
+
 }
 
 fn spawn_camera(mut commands: Commands) {
