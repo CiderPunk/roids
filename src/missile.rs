@@ -18,8 +18,9 @@ pub struct Missile{
   angle:f32,
 }
 
+const MISSILE_MAX_SPEED: f32 = 40.;
 const MISSILE_ACCELERATION: f32 = 50.;
-const MISSILE_TURN_RATE:f32 = 3.;
+const MISSILE_TURN_RATE:f32 = 4.;
 
 fn update_missiles(
   mut query:Query<(&Targeter, &mut Acceleration, &mut Transform), (With<Missile>, With<InBounds>)>,
@@ -48,25 +49,12 @@ fn update_missiles(
       if diff > PI{
         diff -= PI * 2.;
       }
-
+      
       let mut turn = MISSILE_TURN_RATE * time.delta_secs() * diff.signum();
-      if turn.abs() > diff.abs(){
-        turn = diff;
-      }
-
-      //info!("Missile turning {:} by {:}", diff, turn);
-
-      //transform.rotate_local_y(turn);
-      //transform.rotate_local_z( 5.0 * time.delta_secs());
-
+      turn = turn.clamp(-diff, diff);
 
       transform.rotation = Quat::from_axis_angle(Vec3::Y, current_angle + turn);
       
-      
-
-      
-
-
       acceleration.acceleration = Vec3::new(
         MISSILE_ACCELERATION * current_angle.sin(), 
         0., 
@@ -107,7 +95,7 @@ fn spawn_missile(
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(1.)).with_rotation(Quat::from_axis_angle(Vec3::Y, init_angle)),
     Velocity(spawn.velocity),
     SceneRoot(scene_assets.missile.clone()),
-    Acceleration{ acceleration: Vec3::ZERO, max_speed: 40. },
+    Acceleration{ acceleration: Vec3::ZERO, max_speed: MISSILE_MAX_SPEED },
     Collider {
       collison_group: CollisionFlags::Enemy,
       collision_mask: CollisionFlags::Player | CollisionFlags::Asteroid,
