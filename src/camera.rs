@@ -1,4 +1,4 @@
-use bevy::{camera, math::bounding::Aabb2d, prelude::*, window::WindowResized};
+use bevy::{camera, math::{VectorSpace, bounding::Aabb2d}, prelude::*, window::WindowResized};
 
 use crate::{bounds::Bounds, game_manager::GameState, player::PlayerShip, scheduling::GameSchedule};
 
@@ -79,11 +79,8 @@ fn camera_effects(
   camera_single:Single<(&mut CameraEffect, &GlobalTransform)>,
   time:Res<Time>,
 ){
-
   let (mut camera_effect, camera_transform) = camera_single.into_inner();
-
-
-  camera_effect.offset *= 1.0 - (time.delta_secs() * 0.1); // Dampen the effect over time 
+  camera_effect.offset = camera_effect.offset.lerp(Vec3::ZERO, (3. * time.delta_secs()).min(1.0));
 
   for effect in ev_camera_effect_reader.read(){
     info!("Camera effect at {:} magnitude {:}", effect.location, effect.magnitude);
@@ -95,7 +92,7 @@ fn camera_effects(
     } else {
       Vec3::ZERO
     };
-    let shake_amount = effect.magnitude * 10. / (1.0 + distance * 0.5);
+    let shake_amount = effect.magnitude *20. / (1.0 + distance * 0.5);
     camera_effect.offset += normalized_direction * shake_amount;
   }
 
