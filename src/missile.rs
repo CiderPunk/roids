@@ -50,8 +50,7 @@ fn update_missiles(
         diff -= PI * 2.;
       }
       
-      let mut turn = MISSILE_TURN_RATE * time.delta_secs() * diff.signum();
-      turn = turn.clamp(-diff, diff);
+      let turn = (MISSILE_TURN_RATE * time.delta_secs()).min(diff.abs()) * diff.signum();
 
       transform.rotation = Quat::from_axis_angle(Vec3::Y, current_angle + turn);
       
