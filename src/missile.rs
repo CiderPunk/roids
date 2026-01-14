@@ -1,15 +1,20 @@
 use std::f32::consts::PI;
 
-use bevy::{math::NormedVectorSpace, prelude::*};
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
+use bevy::prelude::*;
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
+
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
 pub struct MissilePlugin;
 
 impl Plugin for MissilePlugin{
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Update, (spawn_missiles.in_set(GameSchedule::EntityUpdates),  update_missiles.in_set(GameSchedule::PreEntityUpdates)));
-    ;
+      .add_systems(Update, (
+        spawn_missiles.in_set(GameSchedule::EntityUpdates), 
+        (check_missile_heath, update_missiles).in_set(GameSchedule::PreEntityUpdates)
+      ));
   }
 }
 
@@ -18,9 +23,10 @@ pub struct Missile{
   angle:f32,
 }
 
+
 const MISSILE_ACCELERATION: f32 = 20.;
 const MISSILE_TURN_RATE:f32 = 3.;
-const NAVIGATION_GAIN_N: f32 = 6.;
+//const NAVIGATION_GAIN_N: f32 = 6.;
 const MISSILE_MAX_SPEED: f32 = 40.;
 
 
@@ -35,6 +41,7 @@ fn update_missiles(
     }
     if let Ok((target_transform, target_velocity)) = target_query.get(targeter.target.unwrap()){
 
+
       let relative_position = target_transform.translation().xz() - transform.translation.xz();
       let relative_velocity =  target_velocity.0.xz() - velocity.0.xz();
       let range = relative_position.length();
@@ -43,6 +50,7 @@ fn update_missiles(
       let target_vector = relative_position + relative_velocity * optimal_time;
       
       let target_angle = target_vector.x.atan2(target_vector.y);
+
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
 
       let mut diff = target_angle - current_angle;
@@ -52,16 +60,33 @@ fn update_missiles(
       if diff > PI{
         diff -= PI * 2.;
       }
+      
 
       let max_turn_rate = MISSILE_TURN_RATE * time.delta_secs();
       let turn = diff.clamp(-max_turn_rate, max_turn_rate);
 
       transform.rotation = Quat::from_rotation_y(current_angle + turn);
-      acceleration.acceleration = Vec3::new(current_angle.sin() * MISSILE_ACCELERATION, 0., current_angle.cos() * MISSILE_ACCELERATION);
- 
+      acceleration.acceleration = Vec3::new(current_angle.sin() * MISSILE_ACCELERATION, 0., current_angle.cos() * MISSILE_ACCELERATION); 
     }
   }
 }
+
+
+fn check_missile_heath(
+  query: Query<(&Health, &GlobalTransform, &Velocity), With<Missile>>,
+  mut effect_writer: MessageWriter<EffectSpriteMessage>
+){
+  for (health, transform, velocity) in query.iter() {
+    if health.value > 0. {
+      continue;
+    }
+    info!("Missile destroyed");
+    effect_writer.write(
+      EffectSpriteMessage::new(
+        transform.translation(), 20.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+  }
+}
+
 
 fn spawn_missiles(
   mut commands: Commands, 
