@@ -1,14 +1,16 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::*;
+use bevy_prng::WyRand;
+use bevy_rand::global::GlobalRng;
 
-use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
+use crate::{asset_loader::SceneAssets, bounds::{BoundsDespawn, InBounds}, collision::{Collider, CollisionFlags}, effect_sprite::EffectSpriteMessage, game_manager::{GameEntity, LevelEntity, LevelTarget}, health::Health, level::{SpawnMessage, SpawnType}, movement::{Acceleration, Rotation, Velocity}, scheduling::GameSchedule, targeting::Targeter, warning::Warn};
 pub struct MissilePlugin;
 
 impl Plugin for MissilePlugin{
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Update, (spawn_missiles.in_set(GameSchedule::EntityUpdates),  update_missiles.in_set(GameSchedule::PreEntityUpdates)));
+      .add_systems(Update, (spawn_missiles.in_set(GameSchedule::EntityUpdates),  (check_missile_heath, update_missiles).in_set(GameSchedule::PreEntityUpdates)));
     ;
   }
 }
@@ -20,7 +22,7 @@ pub struct Missile{
 
 const MISSILE_MAX_SPEED: f32 = 40.;
 const MISSILE_ACCELERATION: f32 = 50.;
-const MISSILE_TURN_RATE:f32 = 4.;
+const MISSILE_TURN_RATE:f32 = 2.5;
 
 fn update_missiles(
   mut query:Query<(&Targeter, &mut Acceleration, &mut Transform), (With<Missile>, With<InBounds>)>,
@@ -36,11 +38,7 @@ fn update_missiles(
       //info!("Missile at {:} tracking target at {:}", transform.translation, target_transform.translation());
       let target_vector = target_transform.translation() - transform.translation;
       let target_angle = target_vector.x.atan2(target_vector.z);
-
       let current_angle = transform.rotation.to_euler(EulerRot::YXZ).0;
-
-      //info!("current angle: {:}, target angle: {:}", current_angle, target_angle);
-
 
       let mut diff = target_angle - current_angle;
       if diff < -PI{
@@ -62,6 +60,23 @@ fn update_missiles(
     }
   }
 }
+
+
+fn check_missile_heath(
+  query: Query<(&Health, &GlobalTransform, &Velocity), With<Missile>>,
+  mut effect_writer: MessageWriter<EffectSpriteMessage>
+){
+  for (health, transform, velocity) in query.iter() {
+    if health.value > 0. {
+      continue;
+    }
+    info!("Missile destroyed");
+    effect_writer.write(
+      EffectSpriteMessage::new(
+        transform.translation(), 20.0, velocity.0, crate::effect_sprite::EffectSpriteType::Splosion));
+  }
+}
+
 
 fn spawn_missiles(
   mut commands: Commands, 
