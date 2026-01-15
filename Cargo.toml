@@ -10,18 +10,18 @@ watcher = [
 ]
 
 [dependencies]
-bevy = { version = "0.17.3", features = [
+bevy = { version = "0.18.0", features = [
     "bevy_asset",
 ] }
 bitmask-enum = "2.2.5"
 rand_core = "0.9"
-bevy_rand = "0.12"
-bevy_prng = { version = "0.12", features = ["rand_chacha", "wyrand"] }
+bevy_rand = "0.13"
+bevy_prng = { version = "0.13", features = ["rand_chacha", "wyrand"] }
 
 strum = "0.26"
 strum_macros = "0.26"
 
-bevy_common_assets= {version = "0.14.0", features = ["json"]}
+bevy_common_assets= {version = "0.15.0", features = ["json"]}
 serde = "1"
 serde_json = "1"
 rand = "0.9.2"

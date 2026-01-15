@@ -1,8 +1,9 @@
 use std::{clone, f32::consts::PI, ops::Range};
 use bevy_rand::{global::GlobalRng, plugin::EntropyPlugin};
-use bevy::{color::palettes::css::{CRIMSON, FUCHSIA, GREEN, YELLOW}, math::ops::atan2, prelude::*};
+use bevy::{asset, color::palettes::css::{CRIMSON, FUCHSIA, GREEN, YELLOW}, math::ops::atan2, prelude::*};
 use bevy_prng::WyRand;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 use crate::{asset_loader::{AssetState, LevelHandle}, bounds::Bounds, game_manager::{CurrentLevelIndex, GameEntity, GameState, LevelEntity, LevelTarget}, movement::Velocity, scheduling::GameSchedule};
 
 
@@ -150,7 +151,7 @@ fn bell_curve_distribute(
 #[derive(Resource, Default)]
 pub struct CurrentLevel(pub Option<LevelData>);
 
-#[derive(serde::Deserialize, Asset, TypePath)]
+#[derive(Asset, TypePath, Deserialize, Clone)]
 pub struct LevelCollectionData{
   levels:Vec<LevelData>
 }

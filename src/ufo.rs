@@ -34,7 +34,6 @@ impl Plugin for UfoPlugin{
 
 fn check_ufo_heath(
   query: Query<(&Health, &GlobalTransform, &Velocity), With<Ufo>>,
-  scene_assets: Res<SceneAssets>,
   mut rng: Single<&mut WyRand, With<GlobalRng>>,
   mut effect_writer: MessageWriter<EffectSpriteMessage>,
   mut msg_wreckage_writer: MessageWriter<SpawnWreckageMessage>,

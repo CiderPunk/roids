@@ -14,9 +14,7 @@ impl Plugin for MissilePlugin{
 }
 
 #[derive(Component)]
-pub struct Missile{
-  angle:f32,
-}
+pub struct Missile;
 
 const MISSILE_ACCELERATION: f32 = 50.;
 const MISSILE_TURN_RATE:f32 = 3.;
@@ -102,7 +100,7 @@ fn spawn_missile(
     GameEntity,
     LevelEntity,
     Targeter::new(),
-    Missile{ angle:init_angle, },
+    Missile,
     BoundsDespawn,
     Transform::from_translation(spawn.position).with_scale(Vec3::splat(1.)).with_rotation(Quat::from_axis_angle(Vec3::Y, init_angle)),
     Velocity(spawn.velocity),

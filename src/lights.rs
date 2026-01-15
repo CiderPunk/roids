@@ -14,7 +14,7 @@ impl Plugin for LightPlugin {
     app
       .add_systems(OnEnter(GameState::GameInit), spawn_lights)
       .add_systems(Update, rotate_lights.in_set(GameSchedule::EntityUpdates))
-      .insert_resource(AmbientLight {
+      .insert_resource(GlobalAmbientLight {
         color: Color::WHITE,
         brightness: 500.0,
         ..Default::default()
