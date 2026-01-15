@@ -63,8 +63,8 @@ fn spawn_wave(mut spawn_writer: &mut MessageWriter<SpawnMessage>, spawner: WaveS
 
     let x_dist = spawner.wave_data.x_distribution.unwrap_or(0.9);
     let y_dist = spawner.wave_data.y_distribution.unwrap_or(0.9);
-    let x_iter = spawner.wave_data.x_iterations.unwrap_or(2);
-    let y_iter = spawner.wave_data.x_iterations.unwrap_or(2);
+    let x_iter = spawner.wave_data.x_iterations.unwrap_or(1);
+    let y_iter = spawner.wave_data.y_iterations.unwrap_or(1);
     
     //pick target point
     let target = Vec3::new(bell_curve_distribute(-x_dist * half_size.x .. x_dist * half_size.x, rng, x_iter as usize), 0.,bell_curve_distribute(-y_dist * half_size.z .. y_dist * half_size.z, rng, y_iter as usize));
