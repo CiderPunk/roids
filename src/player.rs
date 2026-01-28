@@ -113,15 +113,17 @@ fn check_player_health(
   mut ev_effect_writer:MessageWriter<EffectSpriteMessage>,
 ) {
   for (health, velocity, transform) in query {
-    if health.value <= 0. {
-      ev_effect_writer.write(EffectSpriteMessage::new(transform.translation(), 16., velocity.0, EffectSpriteType::Splosion));
-      info!("Player dead");
-      if player.lives > 0 {
-        next_state.set(GameState::Dead);
-      } else {
-        next_state.set(GameState::GameOver);
-      }
+    if health.value > 0. {
+      continue;
     }
+    ev_effect_writer.write(EffectSpriteMessage::new(transform.translation(), 16., velocity.0, EffectSpriteType::Splosion));
+    info!("Player dead");
+    if player.lives > 0 {
+      next_state.set(GameState::Dead);
+    } else {
+      next_state.set(GameState::GameOver);
+    }
+  
   }
 }
 

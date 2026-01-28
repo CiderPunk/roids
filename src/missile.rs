@@ -12,8 +12,8 @@ impl Plugin for MissilePlugin{
   fn build(&self, app: &mut App) {
     app
       .add_systems(Update, (
-        spawn_missiles.in_set(GameSchedule::EntityUpdates), 
-        (check_missile_heath, update_missiles).in_set(GameSchedule::PreEntityUpdates)
+        (spawn_missiles, update_missiles).in_set(GameSchedule::EntityUpdates),
+        (check_missile_heath).in_set(GameSchedule::PreDespawnEntities)
       ));
   }
 }
@@ -71,11 +71,12 @@ fn update_missiles(
 
 
 fn check_missile_heath(
-  query: Query<(&Health, &GlobalTransform, &Velocity), With<Missile>>,
+  query: Query<(Entity, &Health, &GlobalTransform, &Velocity), With<Missile>>,
   mut effect_writer: MessageWriter<EffectSpriteMessage>
 ){
-  for (health, transform, velocity) in query.iter() {
+  for (entity,  health, transform, velocity) in query.iter() {
     if health.value > 0. {
+      //info!("missile {} health  {}",entity, health.value);
       continue;
     }
     info!("Missile destroyed");
